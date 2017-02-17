@@ -147,11 +147,26 @@ class UserStore {
       })
   }
 
+  /**
+   * Saves a serialized user object to the 'users' collection.
+   *
+   * @param user {UserAccount}
+   *
+   * @return {Promise}
+   */
   saveUser (user) {
     let userKey = UserStore.normalizeIdKey(user.id)
     return this.backend.put('users', userKey, user)
   }
 
+  /**
+   * Creates an entry for the user id in the 'users-by-email' index, if
+   * applicable.
+   *
+   * @param user {UserAccount}
+   *
+   * @return {Promise}
+   */
   saveUserByEmail (user) {
     if (user.email) {
       let userByEmail = { id: user.id }
