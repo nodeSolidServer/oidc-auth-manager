@@ -3,7 +3,7 @@
 const KVPFileStore = require('kvplus-files')
 const bcrypt = require('bcrypt')
 
-const DEFAULT_SALT_ROUNDS = 5
+const DEFAULT_SALT_ROUNDS = 10
 
 class UserStore {
   /**

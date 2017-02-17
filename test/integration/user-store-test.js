@@ -61,4 +61,65 @@ describe('UserStore (integration)', () => {
         })
     })
   })
+
+  describe('findUser()', () => {
+    it('loads a previously saved user', () => {
+      let options = { path: dbPath, saltRounds: 2 }
+      let store = UserStore.from(options)
+      store.initCollections()
+
+      let user = {
+        id: 'alice.example.com',
+        email: 'alice@example.com'
+      }
+      let password = '12345'
+
+      return store.createUser(user, password)
+        .then(() => {
+          return store.findUser(user.id)
+        })
+        .then(foundUser => {
+          expect(foundUser.id).to.equal(user.id)
+          expect(foundUser.email).to.equal(user.email)
+        })
+    })
+  })
+
+  describe('hashing and matching passwords', () => {
+    it('returns the user object when password matches', () => {
+      let options = { path: dbPath, saltRounds: 2 }
+      let store = UserStore.from(options)
+
+      let plaintextPassword = '12345'
+      let user = { id: 'alice.example.com' }
+
+      return store.hashPassword(plaintextPassword)
+        .then(hashedPassword => {
+          expect(hashedPassword).to.exist
+
+          user.hashedPassword = hashedPassword
+
+          return store.matchPassword(user, plaintextPassword)
+        })
+        .then(matchedUser => {
+          expect(matchedUser).to.equal(user)
+        })
+    })
+
+    it('returns null when password does not match', () => {
+      let options = { path: dbPath, saltRounds: 2 }
+      let store = UserStore.from(options)
+
+      let user = {
+        id: 'alice.example.com',
+        hashedPassword: '12345'
+      }
+      let wrongPassword = '67890'
+
+      return store.matchPassword(user, wrongPassword)
+        .then(matchedUser => {
+          expect(matchedUser).to.be.null
+        })
+    })
+  })
 })
