@@ -40,18 +40,18 @@
   "homepage": "https://github.com/solid/oidc-auth-manager",
   "dependencies": {
     "bcrypt": "^1.0.2",
-    "kvplus-files": "0.0.3",
+    "kvplus-files": "0.0.4",
     "oidc-op": "git://github.com/anvilresearch/oidc-op.git#lib",
     "oidc-rs": "git://github.com/anvilresearch/oidc-rs.git#lib",
-    "solid-multi-rp-client": "git://github.com/solid/solid-multi-rp-client.git"
+    "solid-multi-rp-client": "0.0.3"
   },
   "devDependencies": {
     "chai": "^3.5.0",
     "fs-extra": "^2.0.0",
     "mocha": "^3.2.0",
-    "sinon": "^1.17.6",
+    "sinon": "^1.17.7",
     "sinon-chai": "^2.8.0",
-    "standard": "^5.4.1"
+    "standard": "^8.6.0"
   },
   "standard": {
     "globals": [
