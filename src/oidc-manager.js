@@ -39,7 +39,8 @@ class OidcManager {
    *
    * Config for OIDCProvider:
    * @param [config.providerUri] {string} URI of the OpenID Connect Provider
-   * @param [config.host] {Object}
+   * @param [config.host] {Object} Injected host behavior object,
+   *   see `providerFrom()` docstring.
    *
    * Config for MultiRpClient:
    * @param [config.authCallbackUri] {string}

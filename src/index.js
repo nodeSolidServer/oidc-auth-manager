@@ -1,5 +1,3 @@
 'use strict'
 
-module.exports = {
-  'UserStore': require('./user-store')
-}
+module.exports = require('./oidc-manager')
