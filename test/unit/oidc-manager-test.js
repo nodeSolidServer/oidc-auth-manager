@@ -11,86 +11,126 @@ const OidcManager = require('../../src/oidc-manager')
 
 describe('OidcManager', () => {
   describe('from()', () => {
-    it('should create an instance from config', () => {
+    it('should create an OidcManager instance from config', () => {
       let providerUri = 'https://localhost:8443'
       let dbPath = './db/oidc'
       let saltRounds = 5
+      let host = {}
+      let authCallbackUri = providerUri + '/api/oidc/rp'
+      let postLogoutUri = providerUri + '/goodbye'
 
       let options = {
         providerUri,
         dbPath,
-        saltRounds
+        host,
+        saltRounds,
+        authCallbackUri,
+        postLogoutUri
       }
 
       let oidc = OidcManager.from(options)
 
+      expect(oidc.providerUri).to.equal(providerUri)
+      expect(oidc.host).to.equal(host)
+      expect(oidc.saltRounds).to.equal(saltRounds)
+      expect(oidc.authCallbackUri).to.equal(authCallbackUri)
+      expect(oidc.postLogoutUri).to.equal(postLogoutUri)
+
+      let storePaths = oidc.storePaths
+      expect(storePaths.providerStore.endsWith('oidc/op'))
+      expect(storePaths.multiRpStore.endsWith('oidc/rp'))
+      expect(storePaths.userStore.endsWith('oidc/users'))
+
+      expect(oidc.rs).to.be.null
+      expect(oidc.clients).to.be.null
+      expect(oidc.users).to.be.null
+      expect(oidc.provider).to.be.null
+    })
+  })
+
+  describe('initMultiRpClient()', () => {
+    it('should initialize a Multi RP Client Store instance', () => {
+      let providerUri = 'https://localhost:8443'
+      let authCallbackUri = providerUri + '/api/oidc/rp'
+      let postLogoutUri = providerUri + '/goodbye'
+      let dbPath = './db/oidc-mgr'
+
+      let config = {
+        providerUri,
+        authCallbackUri,
+        postLogoutUri,
+        dbPath
+      }
+
+      let oidc = OidcManager.from(config)
+      oidc.initMultiRpClient()
+
+      let clientStore = oidc.clients
+      expect(clientStore.store.backend.path.endsWith('oidc-mgr/rp/clients'))
+      expect(clientStore).to.respondTo('registerClient')
+    })
+  })
+
+  describe('initRs()', () => {
+    it('should initialize a Resource Authenticator instance', () => {
+      let oidc = OidcManager.from({})
+      oidc.initRs()
+
       expect(oidc.rs.defaults.query).to.be.true
-      expect(oidc.clients.store.backend.path.endsWith('rp/clients'))
-      expect(oidc.provider.issuer).to.equal(providerUri)
-      expect(oidc.users.backend.path.endsWith('oidc/users'))
-      expect(oidc.users.saltRounds).to.equal(saltRounds)
+      expect(oidc.rs).to.respondTo('authenticate')
     })
   })
 
-  describe('rsFrom()', () => {
-    it('should return an initialized ResourceAuthenticator instance', () => {
-      let rs = OidcManager.rsFrom()
-
-      expect(rs).to.respondTo('authenticate')
-    })
-  })
-
-  describe('multiRpClientFrom()', () => {
-    it('should return an initialized MultiRpClient instance', () => {
-      let providerUri = 'https://localhost:8443'
-      let authCallbackUri = providerUri + '/api/oidc/rp'
-      let postLogoutUri = providerUri + '/signed_out.html'
-
+  describe('initUserStore()', () => {
+    it('should initialize a UserStore instance', () => {
+      let dbPath = './db/oidc-mgr'
       let config = {
-        providerUri,
-        authCallbackUri,
-        postLogoutUri,
-        storePath: '/db/oidc'
+        saltRounds: 5,
+        dbPath
       }
 
-      let clients = OidcManager.multiRpClientFrom(config)
-      expect(clients).to.respondTo('registerClient')
-      expect(clients.store.backend.path).to.equal(config.storePath)
-    })
+      let oidc = OidcManager.from(config)
+      oidc.initUserStore()
 
-    it('should use the provided backend instead of instantiating one', () => {
-      let providerUri = 'https://localhost:8443'
-      let authCallbackUri = providerUri + '/api/oidc/rp'
-      let postLogoutUri = providerUri + '/signed_out.html'
-      let backend = {}
-
-      let config = {
-        providerUri,
-        authCallbackUri,
-        postLogoutUri,
-        backend
-      }
-
-      let clients = OidcManager.multiRpClientFrom(config)
-      expect(clients.store.backend).to.equal(backend)
+      expect(oidc.users.backend.path.endsWith('oidc-mgr/users'))
+      expect(oidc.users.saltRounds).to.equal(config.saltRounds)
     })
   })
 
-  describe('providerFrom()', () => {
-    it('should initialize an OIDCProvider instance', () => {
+  describe('initProvider()', () => {
+    it('should initialize an OIDC Provider instance', () => {
       let providerUri = 'https://localhost:8443'
-      let storePath = './db/oidc/op'
       let host = {
         authenticate: () => {},
         obtainConsent: () => {},
         logout: () => {}
       }
-      let config = { providerUri, storePath, host }
+      let dbPath = './db/oidc-mgr'
+      let config = { providerUri, host, dbPath }
 
-      let provider = OidcManager.providerFrom(config)
-      expect(provider.backend.path).to.equal(storePath)
-      expect(provider.host.authenticate).to.equal(host.authenticate)
-      expect(provider.issuer).to.equal(providerUri)
+      let oidc = OidcManager.from(config)
+
+      let loadProviderConfig = sinon.spy(oidc, 'loadProviderConfig')
+
+      oidc.initProvider()
+
+      expect(oidc.provider.issuer).to.equal(providerUri)
+      let storePath = oidc.provider.backend.path
+      expect(storePath.endsWith('oidc-mgr/op')).to.be.true
+      expect(oidc.provider.host.authenticate).to.equal(host.authenticate)
+      expect(loadProviderConfig).to.have.been.called
+    })
+  })
+
+  describe('providerConfigPath()', () => {
+    it('should return the Provider config file path', () => {
+      let dbPath = './db/oidc-mgr'
+      let config = { dbPath }
+
+      let oidc = OidcManager.from(config)
+
+      let file = oidc.providerConfigPath()
+      expect(file.endsWith('oidc-mgr/op/provider.json')).to.be.true
     })
   })
 })

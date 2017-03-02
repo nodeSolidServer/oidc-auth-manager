@@ -5,9 +5,8 @@
   "main": "./src/index.js",
   "scripts": {
     "standard": "standard src/*",
-    "test": "npm run standard && npm run test-unit",
-    "test-integration": "./node_modules/mocha/bin/mocha ./test/integration/*.js",
-    "test-unit": "./node_modules/mocha/bin/mocha ./test/unit/*.js",
+    "test": "npm run standard && npm run mocha",
+    "mocha": "nyc mocha test/**/*.js",
     "preversion": "npm test",
     "postversion": "git push --follow-tags"
   },
@@ -41,17 +40,24 @@
   "dependencies": {
     "bcrypt": "^1.0.2",
     "kvplus-files": "0.0.4",
+    "fs-extra": "^2.0.0",
     "oidc-op": "git://github.com/anvilresearch/oidc-op.git#lib",
     "oidc-rs": "git://github.com/anvilresearch/oidc-rs.git#lib",
     "solid-multi-rp-client": "0.0.3"
   },
   "devDependencies": {
     "chai": "^3.5.0",
-    "fs-extra": "^2.0.0",
     "mocha": "^3.2.0",
+    "nyc": "^10.1.2",
     "sinon": "^1.17.7",
     "sinon-chai": "^2.8.0",
     "standard": "^8.6.0"
+  },
+  "nyc": {
+    "reporter": [
+      "html",
+      "text-summary"
+    ]
   },
   "standard": {
     "globals": [

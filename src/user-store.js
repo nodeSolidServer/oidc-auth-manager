@@ -21,7 +21,7 @@ class UserStore {
    *   (will be initialized if not passed in).
    * @see https://github.com/solid/kvplus-files
    */
-  constructor (options = {}) {
+  constructor (options) {
     this.backend = options.backend
     this.saltRounds = options.saltRounds
   }
@@ -32,30 +32,27 @@ class UserStore {
    *
    *   ```
    *   let options = {
-   *     path: './db',
+   *     path: './db/users',
    *     saltRounds: 10
    *   }
    *   let store = UserStore.from(options)
    *   ```
    *
-   * @param [options={}] {Object} Options hashmap
-   * @param [options.backend] {KVPFileStore} Optional Key/Value file store
-   *   (will be initialized if not passed in).
-   * @param [options.path] {string} Directory path where the various collections
-   *   (users etc) will be stored. Used to initialize a backend if it's not
-   *   explicitly passed in.
+   * @param options {Object} Options hashmap
+   *
+   * @param options.path {string} Directory path where the various collections
+   *   (users etc) will be stored. Used to initialize a backend.
+   *
    * @param [options.saltRounds] {number} Number of `bcrypt` password hash
    *   salt rounds.
    *
-   * @returns {UserStore}
+   * @return {UserStore}
    */
-  static from (options = {}) {
+  static from (options) {
     options.saltRounds = options.saltRounds || DEFAULT_SALT_ROUNDS
 
-    if (!options.backend) {
-      let storeOptions = UserStore.backendOptionsFor(options.path)
-      options.backend = new KVPFileStore(storeOptions)
-    }
+    let storeOptions = UserStore.backendOptionsFor(options.path)
+    options.backend = new KVPFileStore(storeOptions)
 
     return new UserStore(options)
   }
