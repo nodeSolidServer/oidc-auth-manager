@@ -41,10 +41,10 @@ describe('OidcManager', () => {
       expect(storePaths.multiRpStore.endsWith('oidc/rp'))
       expect(storePaths.userStore.endsWith('oidc/users'))
 
-      expect(oidc.rs).to.be.null
-      expect(oidc.clients).to.be.null
-      expect(oidc.users).to.be.null
-      expect(oidc.provider).to.be.null
+      expect(oidc.rs).to.exist
+      expect(oidc.clients).to.exist
+      expect(oidc.users).to.exist
+      expect(oidc.provider).exist
     })
   })
 

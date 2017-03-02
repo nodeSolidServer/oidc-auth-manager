@@ -98,8 +98,14 @@ class OidcManager {
       saltRounds: config.saltRounds,
       storePaths: OidcManager.storePathsFrom(config.dbPath)
     }
+    let oidc = new OidcManager(options)
 
-    return new OidcManager(options)
+    oidc.initMultiRpClient()
+    oidc.initRs()
+    oidc.initUserStore()
+    oidc.initProvider()
+
+    return oidc
   }
 
   /**
@@ -113,11 +119,6 @@ class OidcManager {
   initialize () {
     return Promise.resolve()
       .then(() => {
-        this.initMultiRpClient()
-        this.initRs()
-        this.initUserStore()
-        this.initProvider()
-
         this.clients.store.backend.initCollections()
         this.provider.backend.initCollections()
         this.users.initCollections()
@@ -174,10 +175,8 @@ class OidcManager {
   }
 
   initProviderKeychain () {
-    // provider.initializeKeyChain(providerConfig.keys)
     return this.provider.initializeKeyChain(this.provider.keys)
       .then(keys => {
-        // fs.writeFileSync('provider.json', JSON.stringify(provider, null, 2))
         this.debug('Provider keychain initialized')
       })
   }
