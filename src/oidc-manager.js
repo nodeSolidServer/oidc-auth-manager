@@ -162,6 +162,9 @@ class OidcManager {
   initProvider () {
     let providerConfig = this.loadProviderConfig()
     let provider = new OIDCProvider(providerConfig)
+    if (providerConfig.keys) {
+      provider.keys = providerConfig.keys
+    }
 
     let backend = new KVPFileStore({
       path: this.storePaths.providerStore,
@@ -175,6 +178,12 @@ class OidcManager {
   }
 
   initProviderKeychain () {
+    if (this.provider.keys) {
+      this.debug('Provider keys loaded from config')
+    } else {
+      this.debug('No provider keys found, generating fresh ones')
+    }
+
     return this.provider.initializeKeyChain(this.provider.keys)
       .then(keys => {
         this.debug('Provider keychain initialized')
