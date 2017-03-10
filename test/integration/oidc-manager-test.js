@@ -4,12 +4,8 @@ const fs = require('fs-extra')
 const path = require('path')
 const chai = require('chai')
 const expect = chai.expect
-const sinon = require('sinon')
-const sinonChai = require('sinon-chai')
-chai.use(sinonChai)
 chai.should()
 
-const OIDCProvider = require('oidc-op')
 const OidcManager = require('../../src/oidc-manager')
 
 const dbPath = path.resolve(__dirname, '../db/oidc')
