@@ -8,6 +8,8 @@ const MultiRpClient = require('solid-multi-rp-client')
 const OIDCProvider = require('oidc-op')
 const UserStore = require('./user-store')
 
+const HostAPI = require('./host-api')
+
 const DEFAULT_DB_PATH = './db/oidc'
 
 const DEFAULT_RS_CONFIG = { handleErrors: false, optional: true, query: true }
@@ -172,7 +174,11 @@ class OidcManager {
     })
     provider.inject({ backend })
 
-    provider.inject({ host: this.host })
+    // Init the injected host API (authenticate / obtainConsent / logout)
+    let host = this.host || {}
+    host = Object.assign(host, HostAPI)
+
+    provider.inject({ host })
 
     this.provider = provider
   }

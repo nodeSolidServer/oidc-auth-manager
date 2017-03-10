@@ -4,9 +4,6 @@ const fs = require('fs-extra')
 const path = require('path')
 const chai = require('chai')
 const expect = chai.expect
-const sinon = require('sinon')
-const sinonChai = require('sinon-chai')
-chai.use(sinonChai)
 chai.should()
 
 const UserStore = require('../../src/user-store')
@@ -56,7 +53,6 @@ describe('UserStore (integration)', () => {
 
           let emailIndexFile = store.backend.fileNameFor('alice%40example.com')
           let emailIndexPath = path.join(dbPath, 'users-by-email', emailIndexFile)
-          console.log(emailIndexPath)
           expect(fs.existsSync(emailIndexPath)).to.be.true
         })
     })
