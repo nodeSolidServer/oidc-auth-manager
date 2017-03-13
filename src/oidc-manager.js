@@ -63,6 +63,7 @@ class OidcManager {
 
     this.rs = null
     this.clients = null
+    this.localRp = null
     this.provider = null
     this.users = null
 
@@ -121,11 +122,61 @@ class OidcManager {
   initialize () {
     return Promise.resolve()
       .then(() => {
-        this.clients.store.backend.initCollections()
-        this.provider.backend.initCollections()
-        this.users.initCollections()
+        this.initStorage()
 
         return this.initProviderKeychain()
+      })
+      .then(() => {
+        this.saveProviderConfig()
+
+        return this.initLocalRpClient()
+      })
+      .catch(this.debug)
+  }
+
+  /**
+   * Initializes storage collections (creates directories if using
+   * on-disk stores, etc).
+   * Synchronous.
+   */
+  initStorage () {
+    this.clients.store.backend.initCollections()
+    this.provider.backend.initCollections()
+    this.users.initCollections()
+  }
+
+  initProviderKeychain () {
+    if (this.provider.keys) {
+      this.debug('Provider keys loaded from config')
+    } else {
+      this.debug('No provider keys found, generating fresh ones')
+    }
+
+    return this.provider.initializeKeyChain(this.provider.keys)
+      .then(keys => {
+        this.debug('Provider keychain initialized')
+      })
+  }
+
+  /**
+   * Initializes the local Relying Party client (registered to this instance's
+   * Provider). This acts as a cache warm up (proactively registers or loads
+   * the client from saved config) so that the first API request that comes
+   * along doesn't have to pause to do this. More importantly, it's used
+   * to store the `client_id` of the local RP client for use by the User
+   * Consent screen and other components.
+   *
+   * @return {Promise}
+   */
+  initLocalRpClient () {
+    return this.clients.clientForIssuer(this.providerUri)
+      .then(localClient => {
+        this.debug('Local RP client initialized')
+
+        this.localRp = localClient
+      })
+      .catch(error => {
+        this.debug('Error initializing local RP client: ', error)
       })
   }
 
@@ -181,19 +232,6 @@ class OidcManager {
     provider.inject({ host })
 
     this.provider = provider
-  }
-
-  initProviderKeychain () {
-    if (this.provider.keys) {
-      this.debug('Provider keys loaded from config')
-    } else {
-      this.debug('No provider keys found, generating fresh ones')
-    }
-
-    return this.provider.initializeKeyChain(this.provider.keys)
-      .then(keys => {
-        this.debug('Provider keychain initialized')
-      })
   }
 
   providerConfigPath () {
