@@ -34,8 +34,9 @@ function authenticate (authRequest) {
 
 function obtainConsent (authRequest) {
   let debug = authRequest.host.debug || console.log.bind(console)
+  let skipConsent = true
 
-  return LoginConsentRequest.handle(authRequest)
+  return LoginConsentRequest.handle(authRequest, skipConsent)
     .catch(error => {
       debug('Error in auth Consent step: ', error)
     })
