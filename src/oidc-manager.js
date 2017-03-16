@@ -248,14 +248,9 @@ class OidcManager {
    */
   loadProviderConfig () {
     let providerConfig = {}
-    let storedConfig
     let configPath = this.providerConfigPath()
 
-    try {
-      storedConfig = fs.readFileSync(configPath, 'utf8')
-    } catch (error) {
-      if (error.code !== 'ENOENT') { throw error }
-    }
+    let storedConfig = this.loadConfigFrom(configPath)
 
     if (storedConfig) {
       providerConfig = JSON.parse(storedConfig)
@@ -264,6 +259,25 @@ class OidcManager {
     }
 
     return providerConfig
+  }
+
+  /**
+   * Loads a provider config from a given path
+   *
+   * @param path {string}
+   *
+   * @return {string}
+   */
+  loadConfigFrom (path) {
+    let storedConfig
+
+    try {
+      storedConfig = fs.readFileSync(path, 'utf8')
+    } catch (error) {
+      if (error.code !== 'ENOENT') { throw error }
+    }
+
+    return storedConfig
   }
 
   saveProviderConfig () {
