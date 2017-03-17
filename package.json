@@ -1,6 +1,6 @@
 {
   "name": "oidc-auth-manager",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "An OpenID Connect (OIDC) authentication manager (OP, RP and RS) for decentralized peer-to-peer authentication",
   "main": "./src/index.js",
   "scripts": {
