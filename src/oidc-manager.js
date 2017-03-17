@@ -94,6 +94,7 @@ class OidcManager {
    */
   static from (config) {
     let options = {
+      debug: config.debug,
       providerUri: config.providerUri,
       host: config.host,
       authCallbackUri: config.authCallbackUri,
@@ -192,7 +193,11 @@ class OidcManager {
       collections: ['clients']
     })
 
-    let clientOptions = { backend, localConfig: localRPConfig }
+    let clientOptions = {
+      backend,
+      debug: this.debug,
+      localConfig: localRPConfig
+    }
 
     this.clients = new MultiRpClient(clientOptions)
   }
