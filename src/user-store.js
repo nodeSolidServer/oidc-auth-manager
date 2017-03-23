@@ -1,7 +1,7 @@
 'use strict'
 
 const KVPFileStore = require('kvplus-files')
-const bcrypt = require('bcrypt')
+const bcrypt = require('bcryptjs')
 
 const DEFAULT_SALT_ROUNDS = 10
 
