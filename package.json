@@ -38,9 +38,9 @@
   },
   "homepage": "https://github.com/solid/oidc-auth-manager",
   "dependencies": {
-    "bcrypt": "^1.0.2",
-    "kvplus-files": "0.0.4",
+    "bcryptjs": "^2.4.3",
     "fs-extra": "^2.0.0",
+    "kvplus-files": "0.0.4",
     "oidc-op": "git://github.com/anvilresearch/oidc-op.git#rc-001",
     "oidc-rs": "git://github.com/anvilresearch/oidc-rs.git#rc-001",
     "solid-multi-rp-client": "0.0.4"
