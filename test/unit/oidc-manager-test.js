@@ -73,7 +73,13 @@ describe('OidcManager', () => {
 
   describe('initRs()', () => {
     it('should initialize a Resource Authenticator instance', () => {
-      let oidc = OidcManager.from({})
+      let providerUri = 'https://localhost:8443'
+      let authCallbackUri = providerUri + '/api/oidc/rp'
+      let postLogoutUri = providerUri + '/goodbye'
+
+      let config = { providerUri, authCallbackUri, postLogoutUri }
+
+      let oidc = OidcManager.from(config)
       oidc.initRs()
 
       expect(oidc.rs.defaults.query).to.be.true
@@ -84,7 +90,12 @@ describe('OidcManager', () => {
   describe('initUserStore()', () => {
     it('should initialize a UserStore instance', () => {
       let dbPath = './db/oidc-mgr'
+      let providerUri = 'https://localhost:8443'
+      let authCallbackUri = providerUri + '/api/oidc/rp'
+      let postLogoutUri = providerUri + '/goodbye'
+
       let config = {
+        providerUri, authCallbackUri, postLogoutUri,
         saltRounds: 5,
         dbPath
       }
@@ -100,13 +111,16 @@ describe('OidcManager', () => {
   describe('initProvider()', () => {
     it('should initialize an OIDC Provider instance', () => {
       let providerUri = 'https://localhost:8443'
+      let authCallbackUri = providerUri + '/api/oidc/rp'
+      let postLogoutUri = providerUri + '/goodbye'
+
       let host = {
         authenticate: () => {},
         obtainConsent: () => {},
         logout: () => {}
       }
       let dbPath = './db/oidc-mgr'
-      let config = { providerUri, host, dbPath }
+      let config = { providerUri, host, dbPath, authCallbackUri, postLogoutUri }
 
       let oidc = OidcManager.from(config)
 
@@ -124,8 +138,11 @@ describe('OidcManager', () => {
 
   describe('providerConfigPath()', () => {
     it('should return the Provider config file path', () => {
+      let providerUri = 'https://localhost:8443'
+      let authCallbackUri = providerUri + '/api/oidc/rp'
+      let postLogoutUri = providerUri + '/goodbye'
       let dbPath = './db/oidc-mgr'
-      let config = { dbPath }
+      let config = { dbPath, providerUri, authCallbackUri, postLogoutUri }
 
       let oidc = OidcManager.from(config)
 

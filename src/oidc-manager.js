@@ -42,8 +42,8 @@ class OidcManager {
    * @param [options.host.logout] {Function}
    *
    * Config for MultiRpClient:
-   * @param [options.authCallbackUri] {string}
-   * @param [options.postLogoutUri] {string}
+   * @param [options.authCallbackUri] {string} e.g. '/api/oidc/rp'
+   * @param [options.postLogoutUri] {string} e.g. '/goodbye'
    *
    * Config for UserStore:
    * @param [options.saltRounds] {number} Number of bcrypt password salt rounds
@@ -104,12 +104,26 @@ class OidcManager {
     }
     let oidc = new OidcManager(options)
 
+    oidc.validate()
+
     oidc.initMultiRpClient()
     oidc.initRs()
     oidc.initUserStore()
     oidc.initProvider()
 
     return oidc
+  }
+
+  validate () {
+    if (!this.providerUri) {
+      throw new Error('providerUri is required')
+    }
+    if (!this.authCallbackUri) {
+      throw new Error('authCallbackUri is required')
+    }
+    if (!this.postLogoutUri) {
+      throw new Error('postLogoutUri is required')
+    }
   }
 
   /**
@@ -279,7 +293,10 @@ class OidcManager {
     try {
       storedConfig = fs.readFileSync(path, 'utf8')
     } catch (error) {
-      if (error.code !== 'ENOENT') { throw error }
+      if (error.code !== 'ENOENT') {
+        this.debug('Error in loadConfigFrom: ', error)
+        throw error
+      }
     }
 
     return storedConfig

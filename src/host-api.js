@@ -7,7 +7,6 @@ const LoginConsentRequest = require('./handlers/login-consent-request')
 
 // This gets called from OIDC Provider's /authorize endpoint
 function authenticate (authRequest) {
-  console.log('In authenticate()')
   let debug = authRequest.host.debug || console.log.bind(console)
 
   let session = authRequest.req.session
@@ -33,7 +32,7 @@ function authenticate (authRequest) {
 }
 
 function obtainConsent (authRequest) {
-  let debug = authRequest.host.debug || console.log.bind(console)
+  let debug = authRequest.host.debug || console.error.bind(console)
   let skipConsent = true
 
   return LoginConsentRequest.handle(authRequest, skipConsent)
@@ -43,8 +42,13 @@ function obtainConsent (authRequest) {
 }
 
 function logout (logoutRequest) {
+  let debug = console.error.bind(console)
+
   return LogoutRequest.handle(logoutRequest.req, logoutRequest.res)
     .then(() => logoutRequest)
+    .catch(error => {
+      debug('Error in auth logout() step: ', error)
+    })
 }
 
 module.exports = {
