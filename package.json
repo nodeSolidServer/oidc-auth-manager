@@ -41,9 +41,9 @@
     "bcryptjs": "^2.4.3",
     "fs-extra": "^2.0.0",
     "kvplus-files": "0.0.4",
-    "oidc-op": "git://github.com/anvilresearch/oidc-op.git#rc-001",
-    "oidc-rs": "git://github.com/anvilresearch/oidc-rs.git#rc-001",
-    "solid-multi-rp-client": "0.0.4"
+    "oidc-op": "git://github.com/anvilresearch/oidc-op.git#rc-002",
+    "oidc-rs": "git://github.com/anvilresearch/oidc-rs.git#rc-002",
+    "solid-multi-rp-client": "0.0.5"
   },
   "devDependencies": {
     "chai": "^3.5.0",
