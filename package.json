@@ -43,7 +43,7 @@
     "kvplus-files": "0.0.4",
     "oidc-op": "git://github.com/anvilresearch/oidc-op.git#rc-002",
     "oidc-rs": "git://github.com/anvilresearch/oidc-rs.git#rc-002",
-    "solid-multi-rp-client": "0.0.5"
+    "solid-multi-rp-client": "0.0.6"
   },
   "devDependencies": {
     "chai": "^3.5.0",
