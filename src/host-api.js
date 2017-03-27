@@ -4,6 +4,7 @@ const url = require('url')
 
 const LogoutRequest = require('./handlers/logout-request')
 const LoginConsentRequest = require('./handlers/login-consent-request')
+const AuthSuccessException = require('./errors/auth-succes-exception')
 
 // This gets called from OIDC Provider's /authorize endpoint
 function authenticate (authRequest) {
@@ -27,6 +28,8 @@ function authenticate (authRequest) {
     loginUrl = url.format(loginUrl)
     authRequest.subject = null
     authRequest.res.redirect(loginUrl)
+
+    throw new AuthSuccessException('User redirected to login')
   }
   return authRequest
 }
