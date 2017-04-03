@@ -12,28 +12,30 @@ class SelectProviderRequest {
    * @param [options.webId] {string}
    * @param [options.oidcManager] {OidcManager}
    * @param [options.response] {HttpResponse}
+   * @param [options.serverUri] {string}
    */
   constructor (options = {}) {
     this.webId = options.webId
     this.oidcManager = options.oidcManager
     this.response = options.response
     this.session = options.session
+    this.serverUri = options.serverUri
   }
 
   /**
    * Validates the request and throws an error if invalid.
    *
-   * @throws {TypeError} HTTP 400 if required parameters are missing
+   * @throws {Error} HTTP 400 if required parameters are missing
    */
   validate () {
     if (!this.webId) {
-      let error = new TypeError('No webid is given for Provider Discovery')
+      let error = new Error('No webid is given for Provider Discovery')
       error.statusCode = 400
       throw error
     }
 
     if (!validUrl.isUri(this.webId)) {
-      let error = new TypeError('Invalid webid given for Provider Discovery')
+      let error = new Error('Invalid webid given for Provider Discovery')
       error.statusCode = 400
       throw error
     }
@@ -49,27 +51,33 @@ class SelectProviderRequest {
    * Factory method, creates and returns an initialized and validated instance
    * of SelectProviderRequest from a submitted POST form.
    *
-   * @param [req] {HttpRequest}
+   * @param req {IncomingRequest}
    * @param [req.body.webid] {string}
-   * @param [res] {HttpResponse}
    *
-   * @throws {TypeError} HTTP 400 if required parameters are missing
-   *
+   * @param res {ServerResponse}
+
    * @return {SelectProviderRequest}
    */
-  static fromParams (req = {}, res = {}) {
+  static fromParams (req, res) {
     let body = req.body || {}
     let webId = SelectProviderRequest.normalizeUri(body.webid)
 
-    let oidcManager
+    let oidcManager, serverUri
     if (req.app && req.app.locals) {
-      oidcManager = req.app.locals.oidc
+      let locals = req.app.locals
+      oidcManager = locals.oidc
+      serverUri = locals.host.serverUri
     }
 
-    let options = { webId, oidcManager, response: res, session: req.session }
+    let options = {
+      webId,
+      oidcManager,
+      serverUri,
+      response: res,
+      session: req.session
+    }
 
     let request = new SelectProviderRequest(options)
-    request.validate()
 
     return request
   }
@@ -95,30 +103,42 @@ class SelectProviderRequest {
   }
 
   /**
-   * Handles the Select Provider request. Usage:
+   * Handles the Select Provider POST request. Usage:
    *
    *   ```
-   *   app.post('/api/auth/select-provider', bodyParser, (req, res, next) => {
-   *     return SelectProviderRequest.handle(req, res)
-   *       .catch(next)
-   *   })
+   *   app.post('/api/auth/select-provider', bodyParser, SelectProviderRequest.post })
    *   ```
    *
-   * @param req
-   * @param res
+   * @param req {IncomingRequest}
+   * @param res {ServerResponse}
+   *
    * @throws {Error}
+   *
    * @return {Promise}
    */
-  static handle (req, res) {
-    let request
+  static post (req, res) {
+    const request = SelectProviderRequest.fromParams(req, res)
 
-    try {
-      request = SelectProviderRequest.fromParams(req, res)
-    } catch (error) {
-      return Promise.reject(error)
-    }
+    return Promise.resolve()
+      .then(() => request.validate())
+      .then(() => request.selectProvider())
+      .catch(err => request.error(err))
+  }
 
-    return request.selectProvider()
+  /**
+   * Handles a Select Provider GET request on behalf of a middleware handler. Usage:
+   *
+   *   ```
+   *   app.get('/api/auth/select-provider', SelectProviderRequest.get)
+   *   ```
+   *
+   * @param req {IncomingRequest}
+   * @param res {ServerResponse}
+   */
+  static get (req, res) {
+    const request = SelectProviderRequest.fromParams(req, res)
+
+    request.renderView()
   }
 
   /**
@@ -132,10 +152,8 @@ class SelectProviderRequest {
    */
   selectProvider () {
     return this.fetchProviderUri()
-      .then(this.authUrlFor.bind(this))
-      .then(authUrl => {
-        this.response.redirect(authUrl)
-      })
+      .then(providerUrl => this.authUrlFor(providerUrl))
+      .then(providerAuthUrl => this.response.redirect(providerAuthUrl))
   }
 
   /**
@@ -216,14 +234,28 @@ class SelectProviderRequest {
   /**
    * Constructs the OIDC authorization URL for a given provider.
    *
-   * @param provider {string} Identity provider URI
+   * @param providerUri {string} Identity provider URI
    *
    * @return {Promise<string>}
    */
-  authUrlFor (provider) {
+  authUrlFor (providerUri) {
     let multiRpClient = this.oidcManager.clients
 
-    return multiRpClient.authUrlForIssuer(provider, this.session)
+    return multiRpClient.authUrlForIssuer(providerUri, this.session)
+  }
+
+  error (error) {
+    let res = this.response
+
+    res.status(error.statusCode || 400)
+
+    res.render('auth/select-provider', { error: error.message })
+  }
+
+  renderView () {
+    let res = this.response
+
+    res.render('auth/select-provider', { serverUri: this.serverUri })
   }
 }
 

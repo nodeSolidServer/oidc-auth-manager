@@ -24,25 +24,8 @@ describe('SelectProviderRequest', () => {
     })
   })
 
-  describe('fromParams()', () => {
+  describe('validate()', () => {
     let res = HttpMocks.createResponse()
-
-    it('should initialize a SelectProviderRequest instance', () => {
-      let aliceWebId = 'https://alice.example.com'
-      let oidcManager = {}
-      let session = {}
-      let req = {
-        session,
-        body: { webid: aliceWebId },
-        app: { locals: { oidc: oidcManager } }
-      }
-
-      let request = SelectProviderRequest.fromParams(req, res)
-      expect(request.webId).to.equal(aliceWebId)
-      expect(request.response).to.equal(res)
-      expect(request.oidcManager).to.equal(oidcManager)
-      expect(request.session).to.equal(session)
-    })
 
     it('should throw a 500 error if no oidcManager was initialized', (done) => {
       let aliceWebId = 'https://alice.example.com'
@@ -50,9 +33,10 @@ describe('SelectProviderRequest', () => {
         body: { webid: aliceWebId }
         // no app.locals.oidc
       }
+      let request = SelectProviderRequest.fromParams(req, res)
 
       try {
-        SelectProviderRequest.fromParams(req, res)
+        request.validate()
       } catch (error) {
         expect(error.statusCode).to.equal(500)
         done()
@@ -61,13 +45,37 @@ describe('SelectProviderRequest', () => {
 
     it('should throw a 400 error if no webid is submitted', (done) => {
       let req = {}
+      let request = SelectProviderRequest.fromParams(req, res)
 
       try {
-        SelectProviderRequest.fromParams(req, res)
+        request.validate()
       } catch (error) {
         expect(error.statusCode).to.equal(400)
         done()
       }
+    })
+  })
+
+  describe('fromParams()', () => {
+    let res = HttpMocks.createResponse()
+    let serverUri = 'https://example.com'
+
+    it('should initialize a SelectProviderRequest instance', () => {
+      let aliceWebId = 'https://alice.example.com'
+      let oidcManager = {}
+      let session = {}
+      let req = {
+        session,
+        body: { webid: aliceWebId },
+        app: { locals: { oidc: oidcManager, host: { serverUri } } }
+      }
+
+      let request = SelectProviderRequest.fromParams(req, res)
+      expect(request.webId).to.equal(aliceWebId)
+      expect(request.response).to.equal(res)
+      expect(request.oidcManager).to.equal(oidcManager)
+      expect(request.session).to.equal(session)
+      expect(request.serverUri).to.equal(serverUri)
     })
 
     it('should attempt to normalize an invalid webid uri', () => {
@@ -76,7 +84,7 @@ describe('SelectProviderRequest', () => {
       let req = {
         session,
         body: { webid: 'alice.example.com' },
-        app: { locals: { oidc: oidcManager } }
+        app: { locals: { oidc: oidcManager, host: { serverUri } } }
       }
 
       let request = SelectProviderRequest.fromParams(req, res)
