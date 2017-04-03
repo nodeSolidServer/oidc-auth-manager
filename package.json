@@ -41,9 +41,13 @@
     "bcryptjs": "^2.4.3",
     "fs-extra": "^2.0.0",
     "kvplus-files": "0.0.4",
+    "li": "^1.2.1",
+    "node-fetch": "^1.6.3",
+    "node-mocks-http": "^1.6.1",
     "oidc-op": "git://github.com/anvilresearch/oidc-op.git#rc-002",
     "oidc-rs": "git://github.com/anvilresearch/oidc-rs.git#rc-002",
-    "solid-multi-rp-client": "0.0.6"
+    "solid-multi-rp-client": "0.0.6",
+    "valid-url": "^1.0.9"
   },
   "devDependencies": {
     "chai": "^3.5.0",

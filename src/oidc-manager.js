@@ -16,16 +16,7 @@ const DEFAULT_RS_CONFIG = { handleErrors: false, optional: true, query: true }
 
 class OidcManager {
   /**
-   * @param [options={}] {Object}
-   * @param [options.rs] {ResourceServer} An `oidc-rs` resource authenticator.
-   * @param [options.clients] {MultiRpClient}
-   * @param [options.provider] {Provider} OpenID Connect Identity Provider (OP)
-   * @param [options.users] {UserStore}
-   */
-
-  /**
-   * Factory method, initializes and returns an instance of OidcManager.
-   *
+   * @constructor
    * @param options {Object} Options hashmap object
    *
    * @param [options.storePaths] {Object}
@@ -75,17 +66,19 @@ class OidcManager {
    *
    * @param config {Object} Options hashmap object
    *
+   * @param [options.debug] {Function} Debug function (defaults to console.log)
+   *
    * @param [config.dbPath='./db/oidc'] {string} Folder in which to store the
    *   auth-related collection stores (users, clients, tokens).
    *
    * Config for OIDCProvider:
-   * @param [config.providerUri] {string} URI of the OpenID Connect Provider
+   * @param config.providerUri {string} URI of the OpenID Connect Provider
    * @param [config.host] {Object} Injected host behavior object,
    *   see `providerFrom()` docstring.
    *
    * Config for MultiRpClient:
-   * @param [config.authCallbackUri] {string}
-   * @param [config.postLogoutUri] {string}
+   * @param config.authCallbackUri {string}
+   * @param config.postLogoutUri {string}
    *
    * Config for UserStore:
    * @param [config.saltRounds] {number} Number of bcrypt password salt rounds
