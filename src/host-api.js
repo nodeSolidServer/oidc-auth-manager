@@ -57,7 +57,5 @@ function logout (logoutRequest) {
 module.exports = {
   authenticate,
   obtainConsent,
-  logout,
-  LoginConsentRequest,
-  LogoutRequest
+  logout
 }
