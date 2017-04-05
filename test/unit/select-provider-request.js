@@ -25,15 +25,12 @@ describe('SelectProviderRequest', () => {
   })
 
   describe('validate()', () => {
-    let res = HttpMocks.createResponse()
-
     it('should throw a 500 error if no oidcManager was initialized', (done) => {
       let aliceWebId = 'https://alice.example.com'
-      let req = {
-        body: { webid: aliceWebId }
-        // no app.locals.oidc
+      let options = {
+        webId: aliceWebId
       }
-      let request = SelectProviderRequest.fromParams(req, res)
+      let request = new SelectProviderRequest(options)
 
       try {
         request.validate()
@@ -44,8 +41,25 @@ describe('SelectProviderRequest', () => {
     })
 
     it('should throw a 400 error if no webid is submitted', (done) => {
-      let req = {}
-      let request = SelectProviderRequest.fromParams(req, res)
+      let options = {
+        oidcManager: {}
+      }
+      let request = new SelectProviderRequest(options)
+
+      try {
+        request.validate()
+      } catch (error) {
+        expect(error.statusCode).to.equal(400)
+        done()
+      }
+    })
+
+    it('should throw a 400 if an invalid webid was submitted', (done) => {
+      let options = {
+        webId: 'invalidWebId',
+        oidcManager: {}
+      }
+      let request = new SelectProviderRequest(options)
 
       try {
         request.validate()

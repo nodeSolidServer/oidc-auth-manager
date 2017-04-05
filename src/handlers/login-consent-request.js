@@ -47,7 +47,7 @@ class LoginConsentRequest {
   }
 
   static extractParams (opAuthRequest) {
-    let req = opAuthRequest.req || {}
+    let req = opAuthRequest.req
     let query = req.query || {}
     let body = req.body || {}
     let params = query['client_id'] ? query : body

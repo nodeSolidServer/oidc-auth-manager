@@ -8,13 +8,13 @@ class SelectProviderRequest {
   /**
    * @constructor
    *
-   * @param [options={}]
+   * @param options {Object}
    * @param [options.webId] {string}
    * @param [options.oidcManager] {OidcManager}
    * @param [options.response] {HttpResponse}
    * @param [options.serverUri] {string}
    */
-  constructor (options = {}) {
+  constructor (options) {
     this.webId = options.webId
     this.oidcManager = options.oidcManager
     this.response = options.response

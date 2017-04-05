@@ -90,6 +90,19 @@ describe('LoginConsentRequest', () => {
         })
     })
 
+    it('should pass through opAuthRequest if skipConsent is set', () => {
+      let res = HttpMocks.createResponse()
+      let webId = 'https://alice.example.com/#me'
+      let opAuthRequest = { req: { body: {} }, res, subject: {} }
+      let skipConsent = true
+
+      return LoginConsentRequest.handle(opAuthRequest, skipConsent)
+        .then(() => {
+          expect(LoginConsentRequest.obtainConsent).to.not.have.been.called
+          LoginConsentRequest.obtainConsent.reset()
+        })
+    })
+
     it('should not invoke obtainConsent() if subject is missing', () => {
       let res = HttpMocks.createResponse()
       let opAuthRequest = { req: { body: {} }, res }
