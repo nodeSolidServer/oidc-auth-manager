@@ -1,6 +1,8 @@
 'use strict'
 
 const chai = require('chai')
+const dirtyChai = require('dirty-chai')
+chai.use(dirtyChai)
 const expect = chai.expect
 const HttpMocks = require('node-mocks-http')
 
@@ -22,7 +24,7 @@ describe('LogoutRequest', () => {
     return LogoutRequest.handle(req, res)
       .then(() => {
         let session = req.session
-        expect(session.userId).to.be.empty
+        expect(session.userId).to.be.empty()
       })
   })
 

@@ -1,6 +1,8 @@
 'use strict'
 
 const chai = require('chai')
+const dirtyChai = require('dirty-chai')
+chai.use(dirtyChai)
 const expect = chai.expect
 const HttpMocks = require('node-mocks-http')
 
@@ -15,7 +17,7 @@ describe('SelectProviderRequest', () => {
 
     it('should return null if given a null uri', () => {
       let result = SelectProviderRequest.normalizeUri(null)
-      expect(result).to.be.null
+      expect(result).to.be.null()
     })
 
     it('should return a valid uri unchanged', () => {

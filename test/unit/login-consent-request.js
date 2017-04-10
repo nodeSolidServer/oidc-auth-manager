@@ -1,6 +1,8 @@
 'use strict'
 
 const chai = require('chai')
+const dirtyChai = require('dirty-chai')
+chai.use(dirtyChai)
 const sinon = require('sinon')
 const sinonChai = require('sinon-chai')
 chai.use(sinonChai)
@@ -85,20 +87,19 @@ describe('LoginConsentRequest', () => {
 
       return LoginConsentRequest.handle(opAuthRequest)
         .then(() => {
-          expect(obtainConsent).to.have.been.called
+          expect(obtainConsent).to.have.been.called()
           obtainConsent.reset()
         })
     })
 
     it('should pass through opAuthRequest if skipConsent is set', () => {
       let res = HttpMocks.createResponse()
-      let webId = 'https://alice.example.com/#me'
       let opAuthRequest = { req: { body: {} }, res, subject: {} }
       let skipConsent = true
 
       return LoginConsentRequest.handle(opAuthRequest, skipConsent)
         .then(() => {
-          expect(LoginConsentRequest.obtainConsent).to.not.have.been.called
+          expect(LoginConsentRequest.obtainConsent).to.not.have.been.called()
           LoginConsentRequest.obtainConsent.reset()
         })
     })
@@ -109,7 +110,7 @@ describe('LoginConsentRequest', () => {
 
       return LoginConsentRequest.handle(opAuthRequest)
         .then(() => {
-          expect(LoginConsentRequest.obtainConsent).to.not.have.been.called
+          expect(LoginConsentRequest.obtainConsent).to.not.have.been.called()
         })
     })
   })
@@ -134,7 +135,7 @@ describe('LoginConsentRequest', () => {
 
       let request = new LoginConsentRequest({ params, response, opAuthRequest })
 
-      expect(request.isLocalRpClient('1234')).to.be.false
+      expect(request.isLocalRpClient('1234')).to.be.false()
     })
 
     it('should be false if params has no client id', () => {
@@ -146,7 +147,7 @@ describe('LoginConsentRequest', () => {
 
       let request = new LoginConsentRequest({ params, response, opAuthRequest })
 
-      expect(request.isLocalRpClient(undefined)).to.be.false
+      expect(request.isLocalRpClient(undefined)).to.be.false()
     })
 
     it('should be false if host local client id does not match params', () => {
@@ -160,7 +161,7 @@ describe('LoginConsentRequest', () => {
 
       let request = new LoginConsentRequest({ params, response, opAuthRequest })
 
-      expect(request.isLocalRpClient('1234')).to.be.false
+      expect(request.isLocalRpClient('1234')).to.be.false()
     })
 
     it('should be true if host local client id equals param client_id', () => {
@@ -174,7 +175,7 @@ describe('LoginConsentRequest', () => {
 
       let request = new LoginConsentRequest({ params, response, opAuthRequest })
 
-      expect(request.isLocalRpClient('1234')).to.be.true
+      expect(request.isLocalRpClient('1234')).to.be.true()
     })
   })
 
@@ -195,9 +196,8 @@ describe('LoginConsentRequest', () => {
 
         return LoginConsentRequest.obtainConsent(request)
           .then(opAuthRequest => {
-            expect(opAuthRequest.consent).to.be.true
+            expect(opAuthRequest.consent).to.be.true()
             expect(opAuthRequest.scope).to.equal('openid')
-            expect(opAuthRequest.headersSent).to.be.falsy
           })
       })
 
@@ -208,7 +208,7 @@ describe('LoginConsentRequest', () => {
 
         return LoginConsentRequest.obtainConsent(request)
           .then(() => {
-            expect(checkSavedConsentFor).to.not.have.been.called
+            expect(checkSavedConsentFor).to.not.have.been.called()
           })
       })
     })
@@ -231,7 +231,7 @@ describe('LoginConsentRequest', () => {
 
         return LoginConsentRequest.obtainConsent(request)
           .then(() => {
-            expect(request.saveConsentForClient).to.have.been.called
+            expect(request.saveConsentForClient).to.have.been.called()
           })
       })
 
@@ -240,8 +240,7 @@ describe('LoginConsentRequest', () => {
 
         return LoginConsentRequest.obtainConsent(request)
           .then(opAuthRequest => {
-            expect(opAuthRequest.consent).to.be.true
-            expect(opAuthRequest.headersSent).to.be.falsy
+            expect(opAuthRequest.consent).to.be.true()
           })
       })
 
@@ -260,7 +259,7 @@ describe('LoginConsentRequest', () => {
 
         return LoginConsentRequest.obtainConsent(request)
           .then(opAuthRequest => {
-            expect(render).to.not.have.been.called
+            expect(render).to.not.have.been.called()
           })
       })
     })
@@ -282,7 +281,7 @@ describe('LoginConsentRequest', () => {
 
         return LoginConsentRequest.obtainConsent(request)
           .then(() => {
-            expect(request.checkSavedConsentFor).to.have.been.called
+            expect(request.checkSavedConsentFor).to.have.been.called()
           })
       })
 
@@ -295,7 +294,7 @@ describe('LoginConsentRequest', () => {
 
           return LoginConsentRequest.obtainConsent(request)
             .then(opAuthRequest => {
-              expect(opAuthRequest.consent).to.be.true
+              expect(opAuthRequest.consent).to.be.true()
               expect(opAuthRequest.scope).to.equal('openid')
             })
         })
@@ -317,7 +316,7 @@ describe('LoginConsentRequest', () => {
 
           return LoginConsentRequest.obtainConsent(request)
             .then(() => {
-              expect(renderConsentPage).to.have.been.called
+              expect(renderConsentPage).to.have.been.called()
             })
         })
 
@@ -330,8 +329,8 @@ describe('LoginConsentRequest', () => {
 
           return LoginConsentRequest.obtainConsent(request)
             .then(opAuthRequest => {
-              expect(opAuthRequest.consent).to.not.exist
-              expect(opAuthRequest.scope).to.not.exist
+              expect(opAuthRequest.consent).to.not.exist()
+              expect(opAuthRequest.scope).to.not.exist()
             })
         })
       })
@@ -358,7 +357,7 @@ describe('LoginConsentRequest', () => {
       let req = { body: {} }
       let res = HttpMocks.createResponse()
 
-      let render = sinon.stub(res, 'render')
+      sinon.stub(res, 'render')
 
       let opAuthRequest = { req, res }
       let request = LoginConsentRequest.from(opAuthRequest)
@@ -368,7 +367,7 @@ describe('LoginConsentRequest', () => {
 
       return LoginConsentRequest.obtainConsent(request)
         .then(opAuthRequest => {
-          expect(opAuthRequest.headersSent).to.be.true
+          expect(opAuthRequest.headersSent).to.be.true()
         })
     })
   })

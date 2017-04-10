@@ -1,6 +1,8 @@
 'use strict'
 
 const chai = require('chai')
+const dirtyChai = require('dirty-chai')
+chai.use(dirtyChai)
 const expect = chai.expect
 const sinon = require('sinon')
 const sinonChai = require('sinon-chai')
@@ -41,10 +43,10 @@ describe('OidcManager', () => {
       expect(storePaths.multiRpStore.endsWith('oidc/rp'))
       expect(storePaths.userStore.endsWith('oidc/users'))
 
-      expect(oidc.rs).to.exist
-      expect(oidc.clients).to.exist
-      expect(oidc.users).to.exist
-      expect(oidc.provider).exist
+      expect(oidc.rs).to.exist()
+      expect(oidc.clients).to.exist()
+      expect(oidc.users).to.exist()
+      expect(oidc.provider).to.exist()
     })
   })
 
@@ -82,7 +84,7 @@ describe('OidcManager', () => {
       let oidc = OidcManager.from(config)
       oidc.initRs()
 
-      expect(oidc.rs.defaults.query).to.be.true
+      expect(oidc.rs.defaults.query).to.be.true()
       expect(oidc.rs).to.respondTo('authenticate')
     })
   })
@@ -95,7 +97,9 @@ describe('OidcManager', () => {
       let postLogoutUri = providerUri + '/goodbye'
 
       let config = {
-        providerUri, authCallbackUri, postLogoutUri,
+        providerUri,
+        authCallbackUri,
+        postLogoutUri,
         saltRounds: 5,
         dbPath
       }
@@ -130,9 +134,9 @@ describe('OidcManager', () => {
 
       expect(oidc.provider.issuer).to.equal(providerUri)
       let storePath = oidc.provider.backend.path
-      expect(storePath.endsWith('oidc-mgr/op')).to.be.true
+      expect(storePath.endsWith('oidc-mgr/op')).to.be.true()
       expect(oidc.provider.host.authenticate).to.equal(host.authenticate)
-      expect(loadProviderConfig).to.have.been.called
+      expect(loadProviderConfig).to.have.been.called()
     })
   })
 
@@ -147,7 +151,7 @@ describe('OidcManager', () => {
       let oidc = OidcManager.from(config)
 
       let file = oidc.providerConfigPath()
-      expect(file.endsWith('oidc-mgr/op/provider.json')).to.be.true
+      expect(file.endsWith('oidc-mgr/op/provider.json')).to.be.true()
     })
   })
 })

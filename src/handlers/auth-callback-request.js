@@ -23,15 +23,13 @@ class AuthCallbackRequest {
    * @param req
    * @param res
    * @param next
+   *
    * @returns {Promise}
    */
   static get (req, res, next) {
     const request = AuthCallbackRequest.fromParams(req, res)
 
-    return Promise.resolve()
-      .then(() => request.validate())
-      .then(() => request.handleCallback())
-      .then(() => request.resumeUserWorkflow())
+    return AuthCallbackRequest.handle(request)
       .catch(next)
   }
 
@@ -46,8 +44,6 @@ class AuthCallbackRequest {
    * @return {AuthCallbackRequest}
    */
   static fromParams (req, res) {
-    let body = req.body || {}
-
     let oidcManager, serverUri
     if (req.app && req.app.locals) {
       let locals = req.app.locals
@@ -78,6 +74,16 @@ class AuthCallbackRequest {
     return request
   }
 
+  // Exchange authorization code for id token
+  static handle (request) {
+    return Promise.resolve()
+      .then(() => request.validate())
+      .then(() => request.loadClient())
+      .then(rpClient => request.validateResponse(rpClient))
+      .then(authResponse => request.initSessionUserAuth(authResponse))
+      .then(() => request.resumeUserWorkflow())
+  }
+
   static extractIssuer (req) {
     return req.params && decodeURIComponent(req.params.issuer_id)
   }
@@ -94,18 +100,10 @@ class AuthCallbackRequest {
     }
   }
 
-  // Exchange authorization code for id token
-  handleCallback () {
-    this.debug('in authCodeFlowCallback()')
+  loadClient () {
     let rpClientStore = this.oidcManager.clients
 
     return rpClientStore.clientForIssuer(this.issuer)
-      .then(rpClient => this.validateResponse(rpClient))
-      .then(response => this.initSessionUserAuth(response))
-      .catch((err) => {
-        this.debug('Error in handleCallback()', err)
-        throw err
-      })
   }
 
   initSessionUserAuth (authResponse) {
@@ -143,4 +141,3 @@ class AuthCallbackRequest {
 }
 
 module.exports = AuthCallbackRequest
-

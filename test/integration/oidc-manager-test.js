@@ -3,6 +3,8 @@
 const fs = require('fs-extra')
 const path = require('path')
 const chai = require('chai')
+const dirtyChai = require('dirty-chai')
+chai.use(dirtyChai)
 const expect = chai.expect
 const sinon = require('sinon')
 const sinonChai = require('sinon-chai')
@@ -33,7 +35,7 @@ describe('OidcManager (integration tests)', () => {
 
       let providerConfig = oidc.loadProviderConfig()
       expect(providerConfig.issuer).to.equal(serverUri)
-      expect(providerConfig.keys).to.not.exist
+      expect(providerConfig.keys).to.not.exist()
     })
 
     it('should attempt to load a previously saved provider config', () => {
@@ -57,9 +59,9 @@ describe('OidcManager (integration tests)', () => {
           let providerConfig = oidc.loadProviderConfig()
 
           expect(providerConfig.issuer).to.equal(serverUri)
-          expect(providerConfig.authorization_endpoint).to.exist
-          expect(providerConfig.keys).to.exist
-          expect(oidc.initLocalRpClient).to.have.been.called
+          expect(providerConfig.authorization_endpoint).to.exist()
+          expect(providerConfig.keys).to.exist()
+          expect(oidc.initLocalRpClient).to.have.been.called()
         })
     })
   })

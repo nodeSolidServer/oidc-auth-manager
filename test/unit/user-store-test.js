@@ -1,6 +1,8 @@
 'use strict'
 
 const chai = require('chai')
+const dirtyChai = require('dirty-chai')
+chai.use(dirtyChai)
 const expect = chai.expect
 const sinon = require('sinon')
 const sinonChai = require('sinon-chai')
@@ -36,7 +38,7 @@ describe('UserStore', () => {
   describe('normalizeEmailKey()', () => {
     it('should return a null if no email is passed in', () => {
       let key = UserStore.normalizeEmailKey(null)
-      expect(key).to.be.null
+      expect(key).to.be.null()
     })
 
     it('should uri-escape an email that is passed in', () => {
@@ -48,7 +50,7 @@ describe('UserStore', () => {
   describe('normalizeIdKey()', () => {
     it('should return a null if no id is passed in', () => {
       let key = UserStore.normalizeIdKey(null)
-      expect(key).to.be.null
+      expect(key).to.be.null()
     })
 
     it('should cast an integer id to string', () => {

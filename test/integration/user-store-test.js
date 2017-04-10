@@ -3,6 +3,8 @@
 const fs = require('fs-extra')
 const path = require('path')
 const chai = require('chai')
+const dirtyChai = require('dirty-chai')
+chai.use(dirtyChai)
 const expect = chai.expect
 chai.should()
 
@@ -25,8 +27,8 @@ describe('UserStore (integration)', () => {
 
       store.initCollections()
 
-      expect(fs.existsSync(path.join(dbPath, 'users'))).to.be.true
-      expect(fs.existsSync(path.join(dbPath, 'users-by-email'))).to.be.true
+      expect(fs.existsSync(path.join(dbPath, 'users'))).to.be.true()
+      expect(fs.existsSync(path.join(dbPath, 'users-by-email'))).to.be.true()
     })
   })
 
@@ -44,16 +46,16 @@ describe('UserStore (integration)', () => {
 
       return store.createUser(user, password)
         .then(createdUser => {
-          expect(createdUser.password).to.not.exist
-          expect(createdUser.hashedPassword).to.not.exist
+          expect(createdUser.password).to.not.exist()
+          expect(createdUser.hashedPassword).to.not.exist()
 
           let userFileName = store.backend.fileNameFor(user.id)
           let userFilePath = path.join(dbPath, 'users', userFileName)
-          expect(fs.existsSync(userFilePath)).to.be.true
+          expect(fs.existsSync(userFilePath)).to.be.true()
 
           let emailIndexFile = store.backend.fileNameFor('alice%40example.com')
           let emailIndexPath = path.join(dbPath, 'users-by-email', emailIndexFile)
-          expect(fs.existsSync(emailIndexPath)).to.be.true
+          expect(fs.existsSync(emailIndexPath)).to.be.true()
         })
     })
   })
@@ -91,7 +93,7 @@ describe('UserStore (integration)', () => {
 
       return store.hashPassword(plaintextPassword)
         .then(hashedPassword => {
-          expect(hashedPassword).to.exist
+          expect(hashedPassword).to.exist()
 
           user.hashedPassword = hashedPassword
 
@@ -114,7 +116,7 @@ describe('UserStore (integration)', () => {
 
       return store.matchPassword(user, wrongPassword)
         .then(matchedUser => {
-          expect(matchedUser).to.be.null
+          expect(matchedUser).to.be.null()
         })
     })
   })

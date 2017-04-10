@@ -4,7 +4,7 @@
   "description": "An OpenID Connect (OIDC) authentication manager (OP, RP and RS) for decentralized peer-to-peer authentication",
   "main": "./src/index.js",
   "scripts": {
-    "standard": "standard src/*",
+    "standard": "standard",
     "test": "npm run standard && npm run mocha",
     "mocha": "nyc mocha test/**/*.js",
     "preversion": "npm test",
@@ -51,12 +51,14 @@
   },
   "devDependencies": {
     "chai": "^3.5.0",
+    "chai-as-promised": "^6.0.0",
+    "dirty-chai": "^1.2.2",
     "mocha": "^3.2.0",
     "node-mocks-http": "^1.6.1",
     "nyc": "^10.1.2",
-    "sinon": "^1.17.7",
+    "sinon": "^2.1.0",
     "sinon-chai": "^2.8.0",
-    "standard": "^8.6.0"
+    "standard": "^10.0.1"
   },
   "nyc": {
     "reporter": [
