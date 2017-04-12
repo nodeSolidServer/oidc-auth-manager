@@ -125,7 +125,7 @@ class OidcManager {
    * crypto keychain (either from a previously generated and serialized config,
    * or from scratch).
    *
-   * @return {Promise}
+   * @return {Promise<RelyingParty>} Initialized local RP client
    */
   initialize () {
     return Promise.resolve()
@@ -171,10 +171,10 @@ class OidcManager {
    * Provider). This acts as a cache warm up (proactively registers or loads
    * the client from saved config) so that the first API request that comes
    * along doesn't have to pause to do this. More importantly, it's used
-   * to store the `client_id` of the local RP client for use by the User
+   * to store the local RP client for use by the User
    * Consent screen and other components.
    *
-   * @return {Promise}
+   * @return {Promise<RelyingParty>}
    */
   initLocalRpClient () {
     return this.clients.clientForIssuer(this.providerUri)
@@ -182,6 +182,8 @@ class OidcManager {
         this.debug('Local RP client initialized')
 
         this.localRp = localClient
+
+        return localClient
       })
       .catch(error => {
         this.debug('Error initializing local RP client: ', error)
