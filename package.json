@@ -46,7 +46,7 @@
     "node-mocks-http": "^1.6.1",
     "oidc-op": "git://github.com/anvilresearch/oidc-op.git#rc-003",
     "oidc-rs": "git://github.com/anvilresearch/oidc-rs.git#rc-003",
-    "solid-multi-rp-client": "0.0.6",
+    "solid-multi-rp-client": "0.1.0",
     "valid-url": "^1.0.9"
   },
   "devDependencies": {
