@@ -2,6 +2,7 @@
 
 const fs = require('fs-extra')
 const path = require('path')
+const validUrl = require('valid-url')
 const ResourceAuthenticator = require('oidc-rs')
 const KVPFileStore = require('kvplus-files')
 const MultiRpClient = require('solid-multi-rp-client')
@@ -105,6 +106,20 @@ class OidcManager {
     oidc.initProvider()
 
     return oidc
+  }
+
+  static storePathsFrom (dbPath = DEFAULT_DB_PATH) {
+    // Assuming dbPath = 'db/oidc'
+    return {
+      // RelyingParty client store path (results in 'db/oidc/rp/clients')
+      multiRpStore: path.resolve(dbPath, 'rp'),
+
+      // User store path (results in 'db/oidc/user/['users', 'users-by-email'])
+      userStore: path.resolve(dbPath, 'users'),
+
+      // Identity Provider store path (db/oidc/op/['codes', 'clients', 'tokens', 'refresh'])
+      providerStore: path.resolve(dbPath, 'op')
+    }
   }
 
   validate () {
@@ -302,18 +317,22 @@ class OidcManager {
     fs.writeFileSync(configPath, JSON.stringify(this.provider, null, 2))
   }
 
-  static storePathsFrom (dbPath = DEFAULT_DB_PATH) {
-    // Assuming dbPath = 'db/oidc'
-    return {
-      // RelyingParty client store path (results in 'db/oidc/rp/clients')
-      multiRpStore: path.resolve(dbPath, 'rp'),
+  webIdFromClaims (claims) {
+    let webId
 
-      // User store path (results in 'db/oidc/user/['users', 'users-by-email'])
-      userStore: path.resolve(dbPath, 'users'),
+    if (!claims) { return null }
 
-      // Identity Provider store path (db/oidc/op/['codes', 'clients', 'tokens', 'refresh'])
-      providerStore: path.resolve(dbPath, 'op')
+    if (claims.webid) {
+      webId = claims.webid
+    } else if (validUrl.isUri(claims.sub)) {
+      webId = claims.sub
+    } else if (claims.iss && claims.sub) {
+      webId = `${claims.iss}?sub=${claims.sub}`
+    } else {
+      webId = null
     }
+
+    return webId
   }
 }
 

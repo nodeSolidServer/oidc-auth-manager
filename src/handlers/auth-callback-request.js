@@ -107,9 +107,12 @@ class AuthCallbackRequest {
   }
 
   initSessionUserAuth (authResponse) {
-    let webId = AuthCallbackRequest.extractWebId(authResponse)
     this.session.accessToken = authResponse.params.access_token
     this.session.refreshToken = authResponse.params.refresh_token
+
+    let claims = authResponse.decoded.payload
+    let webId = this.oidcManager.webIdFromClaims(claims)
+
     this.session.userId = webId
     this.session.identified = true
   }

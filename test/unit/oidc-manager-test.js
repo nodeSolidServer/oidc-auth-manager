@@ -1,6 +1,8 @@
 'use strict'
 
 const chai = require('chai')
+const chaiAsPromised = require('chai-as-promised')
+chai.use(chaiAsPromised)
 const dirtyChai = require('dirty-chai')
 chai.use(dirtyChai)
 const expect = chai.expect
@@ -152,6 +154,52 @@ describe('OidcManager', () => {
 
       let file = oidc.providerConfigPath()
       expect(file.endsWith('oidc-mgr/op/provider.json')).to.be.true()
+    })
+  })
+
+  describe('webIdFromClaims()', () => {
+    let oidc
+
+    beforeEach(() => {
+      oidc = new OidcManager({})
+    })
+
+    it('should return null for null claims', () => {
+      let webId = oidc.webIdFromClaims(null)
+
+      expect(webId).to.equal(null)
+    })
+
+    it('should first look in the webid claim', () => {
+      let aliceWebId = 'https://alice.example.com/#me'
+      let claims = { sub: 'abcd', webid: aliceWebId }
+
+      let webId = oidc.webIdFromClaims(claims)
+
+      expect(webId).to.equal(aliceWebId)
+    })
+
+    it('should use the sub claim if it contains an http* uri', () => {
+      let aliceWebId = 'https://alice.example.com/#me'
+      let claims = { sub: aliceWebId }
+
+      let webId = oidc.webIdFromClaims(claims)
+
+      expect(webId).to.equal(aliceWebId)
+    })
+
+    it('should compose webid from issuer and subject claims otherwise', () => {
+      let claims = { iss: 'https://example.com', sub: 'abcd' }
+
+      let webId = oidc.webIdFromClaims(claims)
+
+      expect(webId).to.equal('https://example.com?sub=abcd')
+    })
+
+    it('should return null if none of the above claims are found', () => {
+      let webId = oidc.webIdFromClaims({})
+
+      expect(webId).to.equal(null)
     })
   })
 })
