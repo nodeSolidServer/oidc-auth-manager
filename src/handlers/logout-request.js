@@ -1,15 +1,19 @@
 'use strict'
 
+const DEFAULT_POST_LOGOUT_URL = '/goodbye'
+
 class LogoutRequest {
   /**
    * @constructor
    * @param options
    * @param options.request {IncomingRequest} req
    * @param options.response {ServerResponse} res
+   * @param [options.returnToUrl] {string} Post-logout url to redirect to
    */
   constructor (options) {
     this.request = options.request
     this.response = options.response
+    this.returnToUrl = options.returnToUrl || DEFAULT_POST_LOGOUT_URL
   }
 
   static handle (req, res) {
@@ -24,10 +28,16 @@ class LogoutRequest {
   static fromParams (req, res) {
     let options = {
       request: req,
-      response: res
+      response: res,
+      returnToUrl: LogoutRequest.parseReturnUrl(req)
     }
 
     return new LogoutRequest(options)
+  }
+
+  static parseReturnUrl (req) {
+    let query = req.query || {}
+    return query.returnToUrl
   }
 
   static logout (request) {
@@ -46,7 +56,7 @@ class LogoutRequest {
   }
 
   redirectToGoodbye () {
-    this.response.redirect('/goodbye')
+    this.response.redirect(this.returnToUrl)
   }
 }
 
