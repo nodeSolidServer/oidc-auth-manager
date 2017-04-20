@@ -119,6 +119,10 @@ class SelectProviderRequest {
   static post (req, res) {
     const request = SelectProviderRequest.fromParams(req, res)
 
+    return SelectProviderRequest.handlePost(request)
+  }
+
+  static handlePost (request) {
     return Promise.resolve()
       .then(() => request.validate())
       .then(() => request.selectProvider())

@@ -63,6 +63,6 @@ describe('OidcManager (integration tests)', () => {
           expect(providerConfig.keys).to.exist()
           expect(oidc.initLocalRpClient).to.have.been.called()
         })
-    })
+    }).timeout(5000)
   })
 })

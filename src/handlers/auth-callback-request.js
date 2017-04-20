@@ -9,6 +9,7 @@ class AuthCallbackRequest {
     this.oidcManager = options.oidcManager
     this.response = options.response
     this.session = options.session
+    this.returnToUrl = options.returnToUrl || '/'
     this.serverUri = options.serverUri
     this.debug = options.debug || console.log.bind(console)
   }
@@ -51,12 +52,7 @@ class AuthCallbackRequest {
       serverUri = locals.host.serverUri
     }
 
-    let requestUri = url.format({
-      protocol: req.protocol,
-      host: req.get('host'),
-      pathname: req.path,
-      query: req.query
-    })
+    let requestUri = AuthCallbackRequest.fullUriFor(req)
 
     let issuer = AuthCallbackRequest.extractIssuer(req)
 
@@ -66,12 +62,22 @@ class AuthCallbackRequest {
       oidcManager,
       serverUri,
       response: res,
-      session: req.session
+      session: req.session,
+      returnToUrl: req.session.returnToUrl
     }
 
     let request = new AuthCallbackRequest(options)
 
     return request
+  }
+
+  static fullUriFor (req) {
+    return url.format({
+      protocol: req.protocol,
+      host: req.get('host'),
+      pathname: req.path,
+      query: req.query
+    })
   }
 
   // Exchange authorization code for id token
@@ -86,10 +92,6 @@ class AuthCallbackRequest {
 
   static extractIssuer (req) {
     return req.params && decodeURIComponent(req.params.issuer_id)
-  }
-
-  static extractWebId (authResponse) {
-    return authResponse.decoded.payload.sub
   }
 
   validate () {
@@ -117,6 +119,16 @@ class AuthCallbackRequest {
     this.session.identified = true
   }
 
+  /**
+   * Validates the authentication response and decodes the credentials.
+   * Also performs auth code exchange (trading an authorization code for an
+   * id token and access token), if applicable.
+   *
+   * @param client {RelyingParty}
+   *
+   * @return {AuthenticationResponse} Containing the access_token and
+   *   refresh_token in its `params` property.
+   */
   validateResponse (client) {
     return client.validateResponse(this.requestUri, this.session)
   }
@@ -124,22 +136,12 @@ class AuthCallbackRequest {
   /**
    * Redirects the user back to their original requested resource, at the end
    * of the OIDC authentication process.
-   * @method resumeUserFlow
    */
-  resumeUserWorkflow (req, res) {
-    this.debug('In resumeUserFlow handler:')
+  resumeUserWorkflow () {
+    this.debug('  Resuming workflow, redirecting to ' + this.returnToUrl)
 
-    let session = this.session
-    if (session.returnToUrl) {
-      let returnToUrl = session.returnToUrl
-      // if (req.session.accessToken) {
-      //   returnToUrl += '?access_token=' + req.session.accessToken
-      // }
-      this.debug('  Redirecting to ' + returnToUrl)
-      delete session.returnToUrl
-      return this.response.redirect(302, returnToUrl)
-    }
-    this.response.send('Resume User Flow (failed)')
+    delete this.session.returnToUrl
+    return this.response.redirect(302, this.returnToUrl)
   }
 }
 

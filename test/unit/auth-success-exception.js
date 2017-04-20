@@ -6,11 +6,11 @@ chai.use(dirtyChai)
 chai.should()
 const expect = chai.expect
 
-const AuthSuccessException = require('../../src/errors/auth-succes-exception')
+const AuthResponseSent = require('../../src/errors/auth-response-sent')
 
-describe('AuthSuccessException', () => {
+describe('AuthResponseSent', () => {
   it('should create a handled error', () => {
-    let authSuccess = new AuthSuccessException()
+    let authSuccess = new AuthResponseSent()
 
     expect(authSuccess.handled).to.be.true()
   })

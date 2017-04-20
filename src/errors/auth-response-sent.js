@@ -1,6 +1,6 @@
 'use strict'
 
-class AuthSuccessException extends Error {
+class AuthResponseSent extends Error {
   constructor (message) {
     super(message)
 
@@ -8,4 +8,4 @@ class AuthSuccessException extends Error {
   }
 }
 
-module.exports = AuthSuccessException
+module.exports = AuthResponseSent

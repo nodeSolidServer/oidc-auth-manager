@@ -29,6 +29,7 @@ describe('AuthCallbackRequest', () => {
         response: res,
         session: {},
         serverUri: 'https://example.com',
+        returnToUrl: 'https://example.com/resource',
         debug: {}
       }
 
@@ -41,6 +42,7 @@ describe('AuthCallbackRequest', () => {
       expect(request.session).to.equal(options.session)
       expect(request.serverUri).to.equal(options.serverUri)
       expect(request.debug).to.equal(options.debug)
+      expect(request.returnToUrl).to.equal(options.returnToUrl)
     })
 
     it('should init debug to console by default', () => {
@@ -53,7 +55,7 @@ describe('AuthCallbackRequest', () => {
   describe('AuthCallbackRequest.get', () => {
     it('should create a request instance', () => {
       let AuthCallbackRequest = require('../../src/handlers/auth-callback-request')
-      let req = HttpMocks.createRequest()
+      let req = HttpMocks.createRequest({ session: {} })
       let next = () => {}
 
       sinon.spy(AuthCallbackRequest, 'fromParams')
@@ -66,18 +68,122 @@ describe('AuthCallbackRequest', () => {
     })
   })
 
-  it('throws a 400 error if no issuer_id present')
+  describe('fromParams()', () => {
+    it('should initialize an AuthCallbackRequest instance from request params', () => {
+      let AuthCallbackRequest = require('../../src/handlers/auth-callback-request')
 
-  describe('getIssuerId()', () => {
-    it('should return falsy when req.params.issuer_id is absent')
+      let requestUri = 'https://example.com/api/oidc/rp'
+      AuthCallbackRequest.fullUriFor = sinon.stub().returns(requestUri)
 
-    // it('should uri-decode issuer_id', () => {
-    //   let req = {
-    //     params: {
-    //       issuer_id: 'https%3A%2F%2Flocalhost'
-    //     }
-    //   }
-    //   expect(getIssuerId(req)).to.equal('https://localhost')
-    // })
+      let oidcManager = {}
+      let host = { serverUri: 'https://example.com' }
+      let session = { returnToUrl: 'https://example.com/resource' }
+
+      let req = {
+        session,
+        app: { locals: { oidc: oidcManager, host } },
+        params: {
+          'issuer_id': encodeURIComponent(host.serverUri)
+        }
+      }
+      let res = HttpMocks.createResponse()
+
+      let request = AuthCallbackRequest.fromParams(req, res)
+
+      expect(request.issuer).to.equal('https://example.com')
+      expect(request.serverUri).to.equal('https://example.com')
+      expect(request.requestUri).to.equal(requestUri)
+      expect(request.oidcManager).to.equal(oidcManager)
+      expect(request.response).to.equal(res)
+      expect(request.session).to.equal(session)
+      expect(request.returnToUrl).to.equal(session.returnToUrl)
+    })
+  })
+
+  describe('validate()', () => {
+    it('should throw an error if issuer param is missing', () => {
+      let request = new AuthCallbackRequest({ issuer: 'https://example.com' })
+
+      expect(() => request.validate()).to.not.throw(Error)
+
+      request.issuer = null
+
+      expect(() => request.validate()).to.throw(Error)
+    })
+  })
+
+  describe('loadClient()', () => {
+    it('should load an rp by issuer from the client store', () => {
+      let issuer = 'https://example.com'
+      let client = {}
+      let oidcManager = {
+        clients: {}
+      }
+      oidcManager.clients.clientForIssuer = sinon.stub().resolves(client)
+
+      let request = new AuthCallbackRequest({ issuer, oidcManager })
+
+      return request.loadClient()
+        .then(loadedClient => {
+          expect(oidcManager.clients.clientForIssuer)
+            .to.have.been.calledWith(issuer)
+          expect(loadedClient).to.equal(client)
+        })
+    })
+  })
+
+  describe('initSessionUserAuth()', () => {
+    let accessToken = {}
+    let refreshToken = {}
+    let decodedClaims = {}
+    let authResponse = {
+      params: { 'access_token': accessToken, 'refresh_token': refreshToken },
+      decoded: { payload: decodedClaims }
+    }
+
+    let aliceWebId = 'https://alice.example.com/#me'
+    let oidcManager = {}
+    oidcManager.webIdFromClaims = sinon.stub().returns(aliceWebId)
+
+    let request = new AuthCallbackRequest({ session: {}, oidcManager })
+
+    request.initSessionUserAuth(authResponse)
+
+    let session = request.session
+    expect(session.accessToken).to.equal(accessToken)
+    expect(session.refreshToken).to.equal(refreshToken)
+    expect(oidcManager.webIdFromClaims).to.have.been.calledWith(decodedClaims)
+    expect(session.userId).to.equal(aliceWebId)
+    expect(session.identified).to.be.true()
+  })
+
+  describe('validateResponse()', () => {
+    let client = {}
+    client.validateResponse = sinon.stub().resolves()
+
+    let requestUri = 'https://example.com/callback'
+    let session = {}
+
+    let request = new AuthCallbackRequest({ requestUri, session })
+
+    return request.validateResponse(client)
+      .then(() => {
+        expect(client.validateResponse).to.have.been.calledWith(requestUri, session)
+      })
+  })
+
+  describe('resumeUserWorkflow()', () => {
+    it('should redirect to the returnToUrl and clear it from session', () => {
+      let response = HttpMocks.createResponse()
+      let returnToUrl = 'https://example.com/resource'
+      let session = { returnToUrl }
+
+      let request = new AuthCallbackRequest({ session, response, returnToUrl })
+
+      request.resumeUserWorkflow()
+
+      expect(response._getRedirectUrl()).to.equal('https://example.com/resource')
+      expect(session.returnToUrl).to.not.exist()
+    })
   })
 })
