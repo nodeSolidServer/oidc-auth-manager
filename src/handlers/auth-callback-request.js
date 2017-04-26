@@ -31,7 +31,10 @@ class AuthCallbackRequest {
     const request = AuthCallbackRequest.fromParams(req, res)
 
     return AuthCallbackRequest.handle(request)
-      .catch(next)
+      .catch(error => {
+        request.debug('Error in AuthCallbackRequest:', error)
+        res.redirect('/login')
+      })
   }
 
   /**
@@ -131,6 +134,11 @@ class AuthCallbackRequest {
    */
   validateResponse (client) {
     return client.validateResponse(this.requestUri, this.session)
+      .catch(error => {
+        error.statusCode = 400
+        console.log('Error in callback/validateResponse:', error)
+        throw error
+      })
   }
 
   /**
