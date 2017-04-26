@@ -46,12 +46,8 @@ function redirectToLogin (authRequest) {
   let loginUrl = url.parse('/login')
   loginUrl.query = authRequest.req.query
 
-  console.log('query:', authRequest.req.query)
-
   loginUrl = url.format(loginUrl)
   authRequest.subject = null
-
-  console.log('redirecting to:', loginUrl)
 
   authRequest.res.redirect(loginUrl)
 

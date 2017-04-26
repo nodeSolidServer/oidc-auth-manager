@@ -60,6 +60,29 @@ describe('UserStore (integration)', () => {
     })
   })
 
+  describe('updatePassword()', () => {
+    it('should update the user record with the provided password', () => {
+      let options = { path: dbPath }
+      let store = UserStore.from(options)
+      store.initCollections()
+
+      let user = {
+        id: 'alice.example.com'
+      }
+      let password = '12345'
+
+      return store.updatePassword(user, password)
+        .then(updatedUser => {
+          expect(updatedUser.password).to.not.exist()
+          expect(updatedUser.hashedPassword).to.not.exist()
+
+          let userFileName = store.backend.fileNameFor(user.id)
+          let userFilePath = path.join(dbPath, 'users', userFileName)
+          expect(fs.existsSync(userFilePath)).to.be.true()
+        })
+    })
+  })
+
   describe('findUser()', () => {
     it('loads a previously saved user', () => {
       let options = { path: dbPath, saltRounds: 2 }

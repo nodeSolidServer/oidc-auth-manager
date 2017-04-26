@@ -122,18 +122,12 @@ class UserStore {
    * @return {Promise<Object>} Resolves to stored user object hashmap
    */
   createUser (user, password) {
-    if (!user || !user.id) {
-      let error = new TypeError('No user id provided to user store')
-      error.status = 400
-      return Promise.reject(error)
-    }
-    if (!password) {
-      let error = new TypeError('No password provided')
-      error.status = 400
-      return Promise.reject(error)
-    }
-
-    return this.hashPassword(password)
+    return Promise.resolve()
+      .then(() => {
+        this.validateUser(user)
+        this.validatePassword(password)
+      })
+      .then(() => this.hashPassword(password))
       .then(hashedPassword => {
         user.hashedPassword = hashedPassword
 
@@ -142,6 +136,44 @@ class UserStore {
       .then(() => {
         return this.saveUserByEmail(user)
       })
+  }
+
+  /**
+   * Updates (overwrites) a user record with the new password.
+   *
+   * @param user {UserAccount}
+   * @param password {string}
+   *
+   * @return {Promise}
+   */
+  updatePassword (user, password) {
+    return Promise.resolve()
+      .then(() => {
+        this.validateUser(user)
+        this.validatePassword(password)
+      })
+      .then(() => this.hashPassword(password))
+      .then(hashedPassword => {
+        user.hashedPassword = hashedPassword
+
+        return this.saveUser(user)
+      })
+  }
+
+  validateUser (user) {
+    if (!user || !user.id) {
+      let error = new TypeError('No user id provided to user store')
+      error.status = 400
+      throw error
+    }
+  }
+
+  validatePassword (password) {
+    if (!password) {
+      let error = new TypeError('No password provided')
+      error.status = 400
+      throw error
+    }
   }
 
   /**
