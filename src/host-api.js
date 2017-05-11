@@ -28,6 +28,8 @@ function authenticate (authRequest) {
 
   let webId = authenticatedUser(authRequest)
 
+  setUserHeader(webId, authRequest.res)
+
   if (webId) {
     debug('User is already authenticated as', webId)
 
@@ -107,11 +109,16 @@ function logout (logoutRequest) {
     })
 }
 
+function setUserHeader (webId, res) {
+  res.set('User', webId || '')
+}
+
 module.exports = {
   authenticate,
   obtainConsent,
   logout,
   initSubjectClaim,
   authenticatedUser,
-  redirectToLogin
+  redirectToLogin,
+  setUserHeader
 }

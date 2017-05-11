@@ -39,27 +39,27 @@
   "homepage": "https://github.com/solid/oidc-auth-manager",
   "dependencies": {
     "bcryptjs": "^2.4.3",
-    "fs-extra": "^2.0.0",
+    "fs-extra": "^3.0.1",
     "kvplus-files": "0.0.4",
     "li": "^1.2.1",
     "node-fetch": "^1.6.3",
     "node-mocks-http": "^1.6.1",
-    "oidc-op": "git://github.com/anvilresearch/oidc-op.git#rc-004",
-    "oidc-rs": "git://github.com/anvilresearch/oidc-rs.git#rc-003",
-    "solid-multi-rp-client": "0.1.0",
+    "@trust/oidc-op": "^0.1.0",
+    "@trust/oidc-rs": "^0.1.0",
+    "solid-multi-rp-client": "0.1.1",
     "valid-url": "^1.0.9"
   },
   "devDependencies": {
     "chai": "^3.5.0",
     "chai-as-promised": "^6.0.0",
     "dirty-chai": "^1.2.2",
-    "mocha": "^3.2.0",
+    "mocha": "^3.3.0",
     "nock": "^9.0.13",
     "node-mocks-http": "^1.6.1",
-    "nyc": "^10.1.2",
-    "sinon": "^2.1.0",
-    "sinon-chai": "^2.8.0",
-    "standard": "^10.0.1"
+    "nyc": "^10.3.2",
+    "sinon": "^2.2.0",
+    "sinon-chai": "^2.10.0",
+    "standard": "^10.0.2"
   },
   "nyc": {
     "reporter": [

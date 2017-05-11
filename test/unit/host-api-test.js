@@ -51,8 +51,10 @@ describe('Host API', () => {
 
     it('should initialize subject claim and return request if user is logged in', () => {
       let aliceWebId = 'https://alice.example.com/#me'
+      let session = { userId: aliceWebId, identified: true }
       let authRequest = {
-        req: { session: { userId: aliceWebId, identified: true } },
+        req: HttpMocks.createRequest({ session }),
+        res: HttpMocks.createResponse(),
         host: {}
       }
 
