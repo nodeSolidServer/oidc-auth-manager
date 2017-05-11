@@ -44,9 +44,9 @@
     "li": "^1.2.1",
     "node-fetch": "^1.6.3",
     "node-mocks-http": "^1.6.1",
-    "@trust/oidc-op": "^0.1.0",
-    "@trust/oidc-rs": "^0.1.0",
-    "solid-multi-rp-client": "0.1.1",
+    "@trust/oidc-op": "git://github.com/anvilresearch/oidc-op.git#rc-005",
+    "@trust/oidc-rs": "git://github.com/anvilresearch/oidc-rs.git#rc-004",
+    "solid-multi-rp-client": "^0.1.2",
     "valid-url": "^1.0.9"
   },
   "devDependencies": {
