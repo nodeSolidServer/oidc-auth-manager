@@ -51,7 +51,6 @@ class LogoutRequest {
     session.accessToken = ''
     session.refreshToken = ''
     session.userId = ''
-    session.identified = false
     session.subject = ''
   }
 

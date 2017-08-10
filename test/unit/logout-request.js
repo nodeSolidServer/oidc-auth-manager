@@ -13,7 +13,6 @@ describe('LogoutRequest', () => {
     let req = {
       session: {
         userId: 'https://alice.example.com/#me',
-        identified: true,
         accessToken: {},
         refreshToken: {},
         subject: {}
