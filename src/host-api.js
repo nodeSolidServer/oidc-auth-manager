@@ -68,13 +68,7 @@ function signalResponseSent () {
  * @return {string|null} Web ID of the authenticated user, or null
  */
 function authenticatedUser (authRequest) {
-  let session = authRequest.req.session
-
-  if (!session.identified || !session.userId) {
-    return null
-  }
-
-  return session.userId
+  return authRequest.req.session.userId || null
 }
 
 /**

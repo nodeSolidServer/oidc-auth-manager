@@ -119,7 +119,6 @@ class AuthCallbackRequest {
     let webId = this.oidcManager.webIdFromClaims(claims)
 
     this.session.userId = webId
-    this.session.identified = true
   }
 
   /**

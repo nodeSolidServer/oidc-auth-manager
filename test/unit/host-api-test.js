@@ -20,10 +20,10 @@ describe('Host API', () => {
       expect(api.authenticatedUser(authRequest)).to.be.null()
     })
 
-    it('should return true if session has user id and identified set', () => {
+    it('should return true if session has user id set', () => {
       let aliceWebId = 'https://alice.example.com/#me'
       let authRequest = {
-        req: { session: { userId: aliceWebId, identified: true } }
+        req: { session: { userId: aliceWebId } }
       }
 
       expect(api.authenticatedUser(authRequest)).to.equal(aliceWebId)
@@ -51,7 +51,7 @@ describe('Host API', () => {
 
     it('should initialize subject claim and return request if user is logged in', () => {
       let aliceWebId = 'https://alice.example.com/#me'
-      let session = { userId: aliceWebId, identified: true }
+      let session = { userId: aliceWebId }
       let authRequest = {
         req: HttpMocks.createRequest({ session }),
         res: HttpMocks.createResponse(),

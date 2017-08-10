@@ -154,7 +154,6 @@ describe('AuthCallbackRequest', () => {
     expect(session.refreshToken).to.equal(refreshToken)
     expect(oidcManager.webIdFromClaims).to.have.been.calledWith(decodedClaims)
     expect(session.userId).to.equal(aliceWebId)
-    expect(session.identified).to.be.true()
   })
 
   describe('validateResponse()', () => {
