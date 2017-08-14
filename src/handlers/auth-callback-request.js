@@ -88,7 +88,7 @@ class AuthCallbackRequest {
       .then(() => request.validate())
       .then(() => request.loadClient())
       .then(rpClient => request.validateResponse(rpClient))
-      .then(authResponse => request.initSessionUserAuth(authResponse))
+      .then(session => request.initSessionUserAuth(session))
       .then(() => request.resumeUserWorkflow())
   }
 
@@ -110,11 +110,10 @@ class AuthCallbackRequest {
     return rpClientStore.clientForIssuer(this.issuer)
   }
 
-  initSessionUserAuth (authResponse) {
-    this.session.accessToken = authResponse.params.access_token
-    this.session.refreshToken = authResponse.params.refresh_token
+  initSessionUserAuth (session) {
+    Object.assign(this.session, session)
 
-    let claims = authResponse.decoded.payload
+    let claims = session.decoded.payload
     let webId = this.oidcManager.webIdFromClaims(claims)
 
     this.session.userId = webId
@@ -127,8 +126,7 @@ class AuthCallbackRequest {
    *
    * @param client {RelyingParty}
    *
-   * @return {AuthenticationResponse} Containing the access_token and
-   *   refresh_token in its `params` property.
+   * @return {Session} Containing the `idToken` and `accessToken` properties
    */
   validateResponse (client) {
     return client.validateResponse(this.requestUri, this.session)

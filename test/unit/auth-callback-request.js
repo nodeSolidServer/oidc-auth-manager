@@ -136,8 +136,9 @@ describe('AuthCallbackRequest', () => {
     let accessToken = {}
     let refreshToken = {}
     let decodedClaims = {}
-    let authResponse = {
-      params: { 'access_token': accessToken, 'refresh_token': refreshToken },
+    let sessionResponse = {
+      accessToken,
+      refreshToken,
       decoded: { payload: decodedClaims }
     }
 
@@ -147,7 +148,7 @@ describe('AuthCallbackRequest', () => {
 
     let request = new AuthCallbackRequest({ session: {}, oidcManager })
 
-    request.initSessionUserAuth(authResponse)
+    request.initSessionUserAuth(sessionResponse)
 
     let session = request.session
     expect(session.accessToken).to.equal(accessToken)
