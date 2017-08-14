@@ -3,10 +3,10 @@
 const fs = require('fs-extra')
 const path = require('path')
 const validUrl = require('valid-url')
-const ResourceAuthenticator = require('oidc-rs')
+const ResourceAuthenticator = require('@trust/oidc-rs')
 const KVPFileStore = require('kvplus-files')
 const MultiRpClient = require('solid-multi-rp-client')
-const OIDCProvider = require('oidc-op')
+const OIDCProvider = require('@trust/oidc-op')
 const UserStore = require('./user-store')
 
 const HostAPI = require('./host-api')

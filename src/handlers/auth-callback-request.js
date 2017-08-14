@@ -23,11 +23,10 @@ class AuthCallbackRequest {
    *
    * @param req
    * @param res
-   * @param next
    *
    * @returns {Promise}
    */
-  static get (req, res, next) {
+  static get (req, res) {
     const request = AuthCallbackRequest.fromParams(req, res)
 
     return AuthCallbackRequest.handle(request)
