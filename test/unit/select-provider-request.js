@@ -134,7 +134,7 @@ describe('SelectProviderRequest', () => {
       nock(serverUri)
         .options('/')
         .reply(204, 'No content', {
-          'Link': '<https://example.com>; rel="oidc.provider"'
+          'Link': '<https://example.com>; rel="http://openid.net/specs/connect/1.0/issuer"'
         })
 
       let webId = 'https://example.com/#me'
@@ -156,7 +156,7 @@ describe('SelectProviderRequest', () => {
 
       request.fetchProviderUri()
         .catch(err => {
-          expect(err.message).to.include('oidc.provider not advertised')
+          expect(err.message).to.include('OIDC issuer not advertised')
           done()
         })
     })

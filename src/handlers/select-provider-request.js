@@ -202,7 +202,9 @@ class SelectProviderRequest {
   }
 
   /**
-   * Returns the contents of the `oidc.provider` Link rel header.
+   * Returns the contents of the OIDC issuer Link rel header.
+   *
+   * @see https://openid.net/specs/openid-connect-discovery-1_0.html#IssuerDiscovery
    *
    * @param headers {Headers} Response headers from an OPTIONS call
    *
@@ -211,7 +213,7 @@ class SelectProviderRequest {
   parseProviderLink (headers) {
     let links = li.parse(headers.get('link')) || {}
 
-    return links['oidc.provider']
+    return links['http://openid.net/specs/connect/1.0/issuer']
   }
 
   /**
@@ -223,13 +225,13 @@ class SelectProviderRequest {
    */
   validateProviderUri (provider) {
     if (!provider) {
-      let error = new Error(`oidc.provider not advertised for ${this.webId}`)
+      let error = new Error(`OIDC issuer not advertised for ${this.webId}`)
       error.statusCode = 400
       throw error
     }
 
     if (!validUrl.isUri(provider)) {
-      let error = new Error(`oidc.provider for ${this.webId} is not a valid URI: ${provider}`)
+      let error = new Error(`OIDC issuer for ${this.webId} is not a valid URI: ${provider}`)
       error.statusCode = 400
       throw error
     }
