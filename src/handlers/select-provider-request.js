@@ -1,8 +1,7 @@
 'use strict'
 
 const validUrl = require('valid-url')
-const fetch = require('node-fetch')
-const li = require('li')
+const { preferredProviderFor } = require('../preferred-provider')
 
 class SelectProviderRequest {
   /**
@@ -155,86 +154,19 @@ class SelectProviderRequest {
    * @return {Promise}
    */
   selectProvider () {
-    return this.fetchProviderUri()
+    return this.preferredProviderUrl()
       .then(providerUrl => this.authUrlFor(providerUrl))
       .then(providerAuthUrl => this.response.redirect(providerAuthUrl))
   }
 
   /**
-   * Determines the preferred provider for the given Web ID by making an http
-   * OPTIONS request to it and parsing the `oidc.provider` Link header.
+   * @throws {Error}
    *
-   * @throws {Error} If unable to reach the Web ID URI, or if no valid
-   *   `oidc.provider` was advertised.
-   *
-   * @return {Promise<string>}
+   * @returns {Promise<string>} Resolves to the preferred OIDC provider for
+   *   the url the user entered
    */
-  fetchProviderUri () {
-    let uri = this.webId
-
-    return this.requestOptions(uri)
-      .then(this.parseProviderLink)
-      .then(providerUri => {
-        this.validateProviderUri(providerUri)  // Throw an error if invalid
-
-        return providerUri
-      })
-  }
-
-  /**
-   * Performs an HTTP OPTIONS call to a given uri, and returns the response
-   * headers.
-   *
-   * @param uri {string} Typically a Web ID or profile uri
-   *
-   * @return {Promise<Headers>}
-   */
-  requestOptions (uri) {
-    return fetch(uri, { method: 'OPTIONS' })
-      .then(response => {
-        return response.headers
-      })
-      .catch(() => {
-        let error = new Error(`Provider not found at uri: ${uri}`)
-        error.statusCode = 400
-        throw error
-      })
-  }
-
-  /**
-   * Returns the contents of the OIDC issuer Link rel header.
-   *
-   * @see https://openid.net/specs/openid-connect-discovery-1_0.html#IssuerDiscovery
-   *
-   * @param headers {Headers} Response headers from an OPTIONS call
-   *
-   * @return {string}
-   */
-  parseProviderLink (headers) {
-    let links = li.parse(headers.get('link')) || {}
-
-    return links['http://openid.net/specs/connect/1.0/issuer']
-  }
-
-  /**
-   * Validates a preferred provider uri (makes sure it's a well-formed URI).
-   *
-   * @param provider {string} Identity provider URI
-   *
-   * @throws {Error} If the URI is invalid
-   */
-  validateProviderUri (provider) {
-    if (!provider) {
-      let error = new Error(`OIDC issuer not advertised for ${this.webId}`)
-      error.statusCode = 400
-      throw error
-    }
-
-    if (!validUrl.isUri(provider)) {
-      let error = new Error(`OIDC issuer for ${this.webId} is not a valid URI: ${provider}`)
-      error.statusCode = 400
-      throw error
-    }
+  preferredProviderUrl () {
+    return preferredProviderFor(this.webId)
   }
 
   /**

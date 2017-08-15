@@ -110,13 +110,26 @@ class AuthCallbackRequest {
     return rpClientStore.clientForIssuer(this.issuer)
   }
 
+  /**
+   * @param session
+   *
+   * @returns {Promise}
+   */
   initSessionUserAuth (session) {
     Object.assign(this.session, session)
 
     let claims = session.decoded.payload
-    let webId = this.oidcManager.webIdFromClaims(claims)
 
-    this.session.userId = webId
+    return this.oidcManager.webIdFromClaims(claims)
+      .then(webId => {
+        this.session.userId = webId
+      })
+      .catch(err => {
+        let error = new Error('Could not verify Web ID from token claims')
+        error.statusCode = 401
+        error.cause = err
+        throw error
+      })
   }
 
   /**

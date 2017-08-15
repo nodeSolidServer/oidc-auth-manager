@@ -1,6 +1,5 @@
 'use strict'
 
-const nock = require('nock')
 const chai = require('chai')
 const sinon = require('sinon')
 const dirtyChai = require('dirty-chai')
@@ -127,53 +126,6 @@ describe('SelectProviderRequest', () => {
     })
   })
 
-  describe('fetchProviderUri()', () => {
-    let serverUri = 'https://example.com'
-
-    it('should extract and validate the provider uri from link rel header', () => {
-      nock(serverUri)
-        .options('/')
-        .reply(204, 'No content', {
-          'Link': '<https://example.com>; rel="http://openid.net/specs/connect/1.0/issuer"'
-        })
-
-      let webId = 'https://example.com/#me'
-      let request = new SelectProviderRequest({ webId })
-
-      return request.fetchProviderUri()
-        .then(providerUri => {
-          expect(providerUri).to.equal('https://example.com')
-        })
-    })
-
-    it('should throw an error if provider returns no link rel header', done => {
-      nock(serverUri)
-        .options('/')
-        .reply(204, 'No content')
-
-      let webId = 'https://example.com/#me'
-      let request = new SelectProviderRequest({ webId })
-
-      request.fetchProviderUri()
-        .catch(err => {
-          expect(err.message).to.include('OIDC issuer not advertised')
-          done()
-        })
-    })
-
-    it('should throw an error if provider is unreachable', done => {
-      let webId = 'https://example.com/#me'
-      let request = new SelectProviderRequest({ webId })
-
-      request.fetchProviderUri()
-        .catch(err => {
-          expect(err.statusCode).to.equal(400)
-          expect(err.message).to.include('Provider not found')
-          done()
-        })
-    })
-  })
-
   describe('selectProvider()', () => {
     it('should fetch the provider uri and redirect user to its /authorize endpoint', () => {
       let webId = 'https://example.com/#me'
@@ -188,11 +140,11 @@ describe('SelectProviderRequest', () => {
       let request = new SelectProviderRequest({ webId, oidcManager, response, session })
 
       let providerUri = 'https://example.com'
-      request.fetchProviderUri = sinon.stub().resolves(providerUri)
+      request.preferredProviderUrl = sinon.stub().resolves(providerUri)
 
       return request.selectProvider()
         .then(() => {
-          expect(request.fetchProviderUri).to.have.been.called()
+          expect(request.preferredProviderUrl).to.have.been.called()
           expect(clientStore.authUrlForIssuer).to.have.been.calledWith(providerUri, session)
           expect(request.response._getRedirectUrl()).to.equal(authUrl)
         })
@@ -214,20 +166,6 @@ describe('SelectProviderRequest', () => {
       expect(request.response.statusCode).to.equal(404)
       expect(response.render).to
         .have.been.calledWith('auth/select-provider', { error: 'error message' })
-    })
-  })
-
-  describe('validateProviderUri()', () => {
-    it('throws a 400 on an invalid provider uri', done => {
-      let request = new SelectProviderRequest({})
-
-      try {
-        request.validateProviderUri('invalid provider uri')
-      } catch (error) {
-        expect(error.statusCode).to.equal(400)
-        expect(error.message).to.include('not a valid URI')
-        done()
-      }
     })
   })
 
