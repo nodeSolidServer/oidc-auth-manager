@@ -2,6 +2,7 @@
 
 const fs = require('fs-extra')
 const path = require('path')
+const { URL } = require('whatwg-url')
 const validUrl = require('valid-url')
 const ResourceAuthenticator = require('@trust/oidc-rs')
 const KVPFileStore = require('kvplus-files')
@@ -10,6 +11,7 @@ const OIDCProvider = require('@trust/oidc-op')
 const UserStore = require('./user-store')
 
 const HostAPI = require('./host-api')
+const { discoverProviderFor } = require('./preferred-provider')
 
 const DEFAULT_DB_PATH = './db/oidc'
 
@@ -317,22 +319,135 @@ class OidcManager {
     fs.writeFileSync(configPath, JSON.stringify(this.provider, null, 2))
   }
 
+  /**
+   * Extracts and verifies the Web ID URI from a set of claims (from the payload
+   * of a bearer token).
+   *
+   * @see https://github.com/solid/webid-oidc-spec#webid-provider-confirmation
+   *
+   * @param claims {Object} Claims hashmap, typically the payload of a decoded
+   *   ID Token.
+   *
+   * @throws {Error}
+   *
+   * @returns {Promise<string|null>}
+   */
   webIdFromClaims (claims) {
+    if (!claims) {
+      return Promise.resolve(null)
+    }
+
+    const webId = OidcManager.extractWebId(claims)
+
+    const issuer = claims.iss
+
+    const webidFromIssuer = OidcManager.domainMatches(issuer, webId)
+
+    if (webidFromIssuer) {
+      // easy case, issuer is in charge of the web id
+      return Promise.resolve(webId)
+    }
+
+    // Otherwise, verify that issuer is the preferred OIDC provider for the web id
+    return discoverProviderFor(webId)
+      .then(preferredProvider => {
+        if (preferredProvider === issuer) {  // everything checks out
+          return webId
+        }
+
+        throw new Error(`Preferred provider for Web ID ${webId} does not match token issuer ${issuer}`)
+      })
+  }
+
+  /**
+   * Extracts the Web ID URI from a set of claims (from the payload of a bearer
+   * token).
+   *
+   * @see https://github.com/solid/webid-oidc-spec#deriving-webid-uri-from-id-token
+   *
+   * @param claims {Object} Claims hashmap, typically the payload of a decoded
+   *   ID Token.
+   *
+   * @param claims.iss {string}
+   * @param claims.sub {string}
+   *
+   * @param [claims.webid] {string}
+   *
+   * @throws {Error}
+   *
+   * @returns {string|null}
+   */
+  static extractWebId (claims) {
     let webId
 
-    if (!claims) { return null }
+    if (!claims) {
+      throw new Error('Cannot extract Web ID from missing claims')
+    }
+
+    const issuer = claims.iss
+
+    if (!issuer) {
+      throw new Error('Cannot extract Web ID - missing issuer claim')
+    }
+
+    if (!claims.webid && !claims.sub) {
+      throw new Error('Cannot extract Web ID - no webid or subject claim')
+    }
 
     if (claims.webid) {
       webId = claims.webid
-    } else if (validUrl.isUri(claims.sub)) {
-      webId = claims.sub
-    } else if (claims.iss && claims.sub) {
-      webId = `${claims.iss}?sub=${claims.sub}`
     } else {
-      webId = null
+      // Look to the subject claim to extract a webid uri
+      if (validUrl.isUri(claims.sub)) {
+        webId = claims.sub
+      } else {
+        throw new Error('Cannot extract Web ID - subject claim is not a valid URI')
+      }
     }
 
     return webId
+  }
+
+  /**
+   * Tests whether a given Web ID uri belongs to the issuer. They must be:
+   *   - either from the same domain origin
+   *   - or the webid is an immediate subdomain of the issuer domain
+   *
+   * @param issuer {string}
+   * @param webId {string}
+   *
+   * @returns {boolean}
+   */
+  static domainMatches (issuer, webId) {
+    webId = new URL(webId)
+    let webIdOrigin = webId.origin  // drop the path
+
+    return (issuer === webIdOrigin) || OidcManager.isSubdomain(webIdOrigin, issuer)
+  }
+
+  /**
+   * @param subdomain {string} e.g. Web ID origin (https://alice.example.com)
+   * @param domain {string} e.g. Issuer domain (https://example.com)
+   *
+   * @returns {boolean}
+   */
+  static isSubdomain (subdomain, domain) {
+    subdomain = new URL(subdomain)
+    domain = new URL(domain)
+
+    if (subdomain.protocol !== domain.protocol) {
+      return false  // protocols must match
+    }
+
+    subdomain = subdomain.host  // hostname + port, minus the protocol
+    domain = domain.host
+
+    // Chop off the first subdomain (alice.databox.me -> databox.me)
+    let fragments = subdomain.split('.')
+    fragments.shift()
+    let abridgedSubdomain = fragments.join('.')
+
+    return abridgedSubdomain === domain
   }
 }
 

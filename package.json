@@ -59,7 +59,8 @@
     "nyc": "^11.1.0",
     "sinon": "^2.4.1",
     "sinon-chai": "^2.12.0",
-    "standard": "^10.0.2"
+    "standard": "^10.0.2",
+    "whatwg-url": "^6.1.0"
   },
   "nyc": {
     "reporter": [

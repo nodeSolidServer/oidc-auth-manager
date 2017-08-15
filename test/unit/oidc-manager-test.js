@@ -1,6 +1,7 @@
 'use strict'
 
 const chai = require('chai')
+const nock = require('nock')
 const chaiAsPromised = require('chai-as-promised')
 chai.use(chaiAsPromised)
 const dirtyChai = require('dirty-chai')
@@ -14,6 +15,10 @@ chai.should()
 const OidcManager = require('../../src/oidc-manager')
 
 describe('OidcManager', () => {
+  afterEach(() => {
+    nock.cleanAll()
+  })
+
   describe('from()', () => {
     it('should create an OidcManager instance from config', () => {
       let providerUri = 'https://localhost:8443'
@@ -157,49 +162,158 @@ describe('OidcManager', () => {
     })
   })
 
-  describe('webIdFromClaims()', () => {
-    let oidc
+  describe('extractWebId()', () => {
+    const aliceWebId = 'https://alice.example.com/#me'
+    let claims
 
     beforeEach(() => {
-      oidc = new OidcManager({})
+      claims = {
+        iss: 'https://example.com',
+        sub: 'abcd'
+      }
     })
 
-    it('should return null for null claims', () => {
-      let webId = oidc.webIdFromClaims(null)
+    it('should throw an error for null claims', () => {
+      expect(() => OidcManager.extractWebId(null))
+        .to.throw(/Cannot extract Web ID from missing claims/)
+    })
 
-      expect(webId).to.equal(null)
+    it('should throw an error if issuer claim is not present', () => {
+      delete claims.iss
+
+      expect(() => OidcManager.extractWebId(claims))
+        .to.throw(/Cannot extract Web ID - missing issuer claim/)
     })
 
     it('should first look in the webid claim', () => {
-      let aliceWebId = 'https://alice.example.com/#me'
-      let claims = { sub: 'abcd', webid: aliceWebId }
+      claims.webid = aliceWebId
 
-      let webId = oidc.webIdFromClaims(claims)
+      let webId = OidcManager.extractWebId(claims)
 
       expect(webId).to.equal(aliceWebId)
     })
 
     it('should use the sub claim if it contains an http* uri', () => {
-      let aliceWebId = 'https://alice.example.com/#me'
-      let claims = { sub: aliceWebId }
+      claims.sub = aliceWebId
 
-      let webId = oidc.webIdFromClaims(claims)
+      let webId = OidcManager.extractWebId(claims)
 
       expect(webId).to.equal(aliceWebId)
     })
 
-    it('should compose webid from issuer and subject claims otherwise', () => {
-      let claims = { iss: 'https://example.com', sub: 'abcd' }
+    it('should throw an error if no webid claim and sub claim is invalid uri', () => {
+      claims.sub = 'invalid uri'
 
-      let webId = oidc.webIdFromClaims(claims)
-
-      expect(webId).to.equal('https://example.com?sub=abcd')
+      expect(() => OidcManager.extractWebId(claims))
+        .to.throw(/Cannot extract Web ID - subject claim is not a valid URI/)
     })
 
-    it('should return null if none of the above claims are found', () => {
-      let webId = oidc.webIdFromClaims({})
+    it('should throw if none of the above claims are found', () => {
+      delete claims.sub
 
-      expect(webId).to.equal(null)
+      expect(() => OidcManager.extractWebId(claims))
+        .to.throw(/Cannot extract Web ID - no webid or subject claim/)
+    })
+  })
+
+  describe('webIdFromClaims', () => {
+    const providerUri = 'https://example.com'
+    const authCallbackUri = providerUri + '/api/oidc/rp'
+    const postLogoutUri = providerUri + '/goodbye'
+    const config = { providerUri, authCallbackUri, postLogoutUri }
+    const oidc = OidcManager.from(config)
+
+    it('should resolve with null webid with missing claims', () => {
+      return oidc.webIdFromClaims(null)
+        .then(webId => {
+          expect(webId).to.be.null()
+        })
+    })
+
+    it('should skip verifying preferred provider if webid and issuer match', () => {
+      let claims = {
+        iss: 'https://example.com',
+        sub: 'https://example.com/profile#me'
+      }
+
+      return oidc.webIdFromClaims(claims)
+        .then(webId => {
+          expect(webId).to.equal(claims.sub)
+        })
+    })
+
+    it('should verify provider if webid and issuer do not match', () => {
+      let claims = {
+        iss: 'https://provider.com',
+        sub: 'https://example.com/profile#me'
+      }
+
+      nock('https://example.com')
+        .options('/profile')
+        .reply(204, 'No content', {
+          'Link': '<https://provider.com>; rel="http://openid.net/specs/connect/1.0/issuer"'
+        })
+
+      return oidc.webIdFromClaims(claims)
+        .then(webId => {
+          expect(webId).to.equal(claims.sub)
+        })
+    })
+
+    it('should throw an error if provider could not be verified', done => {
+      let claims = {
+        iss: 'https://provider.com',
+        sub: 'https://example.com/profile#me'
+      }
+
+      nock('https://example.com')
+        .options('/profile')
+        .reply(204, 'No content', {
+          'Link': '<https://another-provider.com>; rel="http://openid.net/specs/connect/1.0/issuer"'
+        })
+
+      oidc.webIdFromClaims(claims)
+        .catch(err => {
+          expect(err).to.match(/Preferred provider for Web ID https:\/\/example.com\/profile#me does not match token issuer https:\/\/provider.com/)
+          done()
+        })
+    })
+  })
+
+  describe('domainMatches', () => {
+    it('should be true if webid came from same origin as issuer', () => {
+      let webId = 'https://alice.example.com/profile#me'
+      let issuer = 'https://alice.example.com'
+
+      expect(OidcManager.domainMatches(issuer, webId)).to.be.true()
+    })
+
+    it('should be false if webid is from different domain as issuer', () => {
+      let webId = 'https://example.com/#me'
+      let issuer = 'https://provider.com'
+
+      expect(OidcManager.domainMatches(issuer, webId)).to.be.false()
+    })
+
+    it('should be true if webid origin is subdomain of issuer', () => {
+      let webId = 'https://alice.example.com/profile#me'
+      let issuer = 'https://example.com'
+
+      expect(OidcManager.domainMatches(issuer, webId)).to.be.true()
+    })
+
+    it('should be false if webid and issuer protocols do not match', () => {
+      let webId = 'http://example.com/#me'
+      let issuer = 'https://example.com'
+
+      expect(OidcManager.domainMatches(issuer, webId)).to.be.false()
+    })
+
+    it('should be false if webid and issuer ports do not match', () => {
+      let webId = 'https://example.com/#me'
+      let issuer = 'https://example.com:8080'
+
+      expect(OidcManager.domainMatches(issuer, webId)).to.be.false()
     })
   })
 })

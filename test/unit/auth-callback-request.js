@@ -142,34 +142,40 @@ describe('AuthCallbackRequest', () => {
       decoded: { payload: decodedClaims }
     }
 
-    let aliceWebId = 'https://alice.example.com/#me'
-    let oidcManager = {}
-    oidcManager.webIdFromClaims = sinon.stub().returns(aliceWebId)
+    it('should init session with user credentials', () => {
+      let aliceWebId = 'https://alice.example.com/#me'
+      let oidcManager = {}
+      oidcManager.webIdFromClaims = sinon.stub().resolves(aliceWebId)
 
-    let request = new AuthCallbackRequest({ session: {}, oidcManager })
+      let request = new AuthCallbackRequest({ session: {}, oidcManager })
 
-    request.initSessionUserAuth(sessionResponse)
-
-    let session = request.session
-    expect(session.accessToken).to.equal(accessToken)
-    expect(session.refreshToken).to.equal(refreshToken)
-    expect(oidcManager.webIdFromClaims).to.have.been.calledWith(decodedClaims)
-    expect(session.userId).to.equal(aliceWebId)
+      return request.initSessionUserAuth(sessionResponse)
+        .then(() => {
+          let session = request.session
+          expect(session.accessToken).to.equal(accessToken)
+          expect(session.refreshToken).to.equal(refreshToken)
+          expect(oidcManager.webIdFromClaims).to.have.been.calledWith(decodedClaims)
+          expect(session.userId).to.equal(aliceWebId)
+        })
+    })
   })
 
   describe('validateResponse()', () => {
-    let client = {}
-    client.validateResponse = sinon.stub().resolves()
+    it('should validate the response', () => {
+      let client = {}
+      client.validateResponse = sinon.stub().resolves()
 
-    let requestUri = 'https://example.com/callback'
-    let session = {}
+      let requestUri = 'https://example.com/callback'
+      let session = {}
 
-    let request = new AuthCallbackRequest({ requestUri, session })
+      let request = new AuthCallbackRequest({ requestUri, session })
 
-    return request.validateResponse(client)
-      .then(() => {
-        expect(client.validateResponse).to.have.been.calledWith(requestUri, session)
-      })
+      return request.validateResponse(client)
+        .then(() => {
+          expect(client.validateResponse).to
+            .have.been.calledWith(requestUri, session)
+        })
+    })
   })
 
   describe('resumeUserWorkflow()', () => {
