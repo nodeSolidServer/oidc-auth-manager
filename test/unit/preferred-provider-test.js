@@ -34,6 +34,19 @@ describe('preferred-provider.js', () => {
         })
     })
 
+    it('should drop the path from extracted provider uri', () => {
+      nock(serverUri)
+        .options('/')
+        .reply(204, 'No content', {
+          'Link': '<https://example.com/>; rel="http://openid.net/specs/connect/1.0/issuer"'
+        })
+
+      return provider.discoverProviderFor(webId)
+        .then(providerUri => {
+          expect(providerUri).to.equal('https://example.com')
+        })
+    })
+
     it('should extract and validate the provider uri from the webid profile', () => {
       nock(serverUri)
         .options('/')
