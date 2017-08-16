@@ -155,7 +155,11 @@ class SelectProviderRequest {
    */
   selectProvider () {
     return this.preferredProviderUrl()
-      .then(providerUrl => this.authUrlFor(providerUrl))
+      .then(providerUrl => {
+        this.oidcManager.debug('Building /authorize url for provider:', providerUrl)
+
+        return this.authUrlFor(providerUrl)
+      })
       .then(providerAuthUrl => this.response.redirect(providerAuthUrl))
   }
 
@@ -166,6 +170,8 @@ class SelectProviderRequest {
    *   the url the user entered
    */
   preferredProviderUrl () {
+    this.oidcManager.debug('Discovering provider for uri:', this.webId)
+
     return preferredProviderFor(this.webId)
   }
 

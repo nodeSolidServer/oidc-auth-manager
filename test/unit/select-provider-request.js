@@ -132,7 +132,10 @@ describe('SelectProviderRequest', () => {
       let clientStore = {}
       let authUrl = 'https://example.com/authorize?client_id=1234'
       clientStore.authUrlForIssuer = sinon.stub().resolves(authUrl)
-      let oidcManager = { clients: clientStore }
+      let oidcManager = {
+        clients: clientStore,
+        debug: console.log.bind(console)
+      }
 
       let response = HttpMocks.createResponse()
       let session = {}

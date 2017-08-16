@@ -46,8 +46,8 @@
     "li": "^1.2.1",
     "node-fetch": "^1.7.1",
     "node-mocks-http": "^1.6.4",
-    "rdflib": "^0.16.1",
-    "solid-multi-rp-client": "^0.2.0",
+    "rdflib": "^0.16.2",
+    "solid-multi-rp-client": "^0.2.1",
     "valid-url": "^1.0.9"
   },
   "devDependencies": {
