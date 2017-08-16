@@ -11,6 +11,8 @@ chai.use(require('dirty-chai'))
 const expect = chai.expect
 const serverUri = 'https://example.com'
 
+const sampleProfileSrc = require('../resources/sample-webid-profile')
+
 describe('preferred-provider.js', () => {
   afterEach(() => {
     nock.cleanAll()
@@ -26,7 +28,18 @@ describe('preferred-provider.js', () => {
           'Link': '<https://example.com>; rel="http://openid.net/specs/connect/1.0/issuer"'
         })
 
-      let webId = 'https://example.com/#me'
+      return provider.discoverProviderFor(webId)
+        .then(providerUri => {
+          expect(providerUri).to.equal('https://example.com')
+        })
+    })
+
+    it('should drop the path from extracted provider uri', () => {
+      nock(serverUri)
+        .options('/')
+        .reply(204, 'No content', {
+          'Link': '<https://example.com/>; rel="http://openid.net/specs/connect/1.0/issuer"'
+        })
 
       return provider.discoverProviderFor(webId)
         .then(providerUri => {
@@ -34,19 +47,42 @@ describe('preferred-provider.js', () => {
         })
     })
 
-    it('should throw an error if provider returns no link rel header', done => {
+    it('should extract and validate the provider uri from the webid profile', () => {
       nock(serverUri)
         .options('/')
         .reply(204, 'No content')
 
+      nock(serverUri)
+        .get('/')
+        .reply(200, sampleProfileSrc, {
+          'Content-Type': 'text/turtle'
+        })
+
+      return provider.discoverProviderFor(webId)
+        .then(providerUri => {
+          expect(providerUri).to.equal('https://provider.com')
+        })
+    })
+
+    it('should throw an error if webid is reachable but no provider uri found', done => {
+      nock(serverUri)
+        .options('/')
+        .reply(204, 'No content')  // no provider uri in OPTIONS headers
+
+      nock(serverUri)
+        .get('/')
+        .reply(200, '', {
+          'Content-Type': 'text/turtle'  // no provider triple in the profile
+        })
+
       provider.discoverProviderFor(webId)
         .catch(err => {
-          expect(err.message).to.include('OIDC issuer not advertised')
+          expect(err.message).to.match(/OIDC issuer not advertised for https:\/\/example.com\/#me/)
           done()
         })
     })
 
-    it('should throw an error if provider is unreachable', done => {
+    it('should throw an error if web id is unreachable', done => {
       nock(serverUri)
         .options('/')
         .reply(404)
@@ -54,7 +90,7 @@ describe('preferred-provider.js', () => {
       provider.discoverProviderFor(webId)
         .catch(err => {
           expect(err.statusCode).to.equal(400)
-          expect(err.message).to.include('Provider not found')
+          expect(err.message).to.equal('Could not reach Web ID https://example.com/#me to discover provider')
           done()
         })
     })

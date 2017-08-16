@@ -4,6 +4,7 @@ const { URL } = require('whatwg-url')
 const validUrl = require('valid-url')
 const fetch = require('node-fetch')
 const li = require('li')
+const rdf = require('rdflib')
 
 module.exports = {
   discoverProviderFor,
@@ -22,7 +23,6 @@ function preferredProviderFor (uri) {
   // First, determine if the uri is an OIDC provider
   return providerExists(uri)
     .then(providerUri => {
-      console.log('ProviderUri:', providerUri)
       if (providerUri) {
         return providerUri  // the given uri's origin hosts an OIDC provider
       }
@@ -55,33 +55,60 @@ function providerExists (uri) {
 
 /**
  *
- * @param uri {string} Web ID URI
+ * @param webId {string} Web ID URI
  *
  * @returns {Promise<string>} Resolves with the preferred provider uri for the
- *  given Web ID, extracted from Link rel header.
+ *  given Web ID, extracted from Link rel header or profile body. If no
+ *  provider URI was found, reject with an error.
  */
-function discoverProviderFor (uri) {
-  return fetch(uri, { method: 'OPTIONS' })
+function discoverProviderFor (webId) {
+  return discoverFromHeaders(webId)
 
-    .then(response => {
-      if (!response.ok) {
-        throw new Error(`Could not fetch ${uri}: ${response.status} ${response.statusText}`)
-      }
-
-      return response.headers
-    })
-
-    .catch(err => {
-      let error = new Error(`Provider not found at uri: ${uri}`)
-      error.statusCode = 400
-      error.cause = err
-      throw error
-    })
-
-    .then(headers => parseProviderLink(headers))
+    .then(providerFromHeaders => providerFromHeaders || discoverFromProfile(webId))
 
     .then(providerUri => {
-      validateProviderUri(providerUri, uri)  // Throw an error if invalid
+      // drop the path (provider origin only)
+      if (providerUri) {
+        providerUri = (new URL(providerUri)).origin
+      }
+
+      validateProviderUri(providerUri, webId)  // Throw an error if empty or invalid
+
+      return providerUri
+    })
+}
+
+/**
+ * @param webId {string}
+ *
+ * @returns {Promise<string|null>}
+ */
+function discoverFromHeaders (webId) {
+  return fetch(webId, { method: 'OPTIONS' })
+    .then(response => {
+      if (response.ok) {
+        return parseProviderLink(response.headers)
+      }
+
+      return null
+    })
+}
+
+function discoverFromProfile (webId) {
+  const store = rdf.graph()
+
+  const fetcher = rdf.fetcher(store)
+
+  return fetcher.fetch(webId, { force: true })
+    .then(response => {
+      if (!response.ok) {
+        let error = new Error(`Could not reach Web ID ${webId} to discover provider`)
+        error.statusCode = 400
+        throw error
+      }
+
+      let providerTerm = rdf.namedNode('http://www.w3.org/ns/solid/terms#oidcIssuer')
+      let providerUri = store.anyValue(rdf.namedNode(webId), providerTerm)
 
       return providerUri
     })
