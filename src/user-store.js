@@ -185,7 +185,33 @@ class UserStore {
    */
   saveUser (user) {
     let userKey = UserStore.normalizeIdKey(user.id)
-    return this.backend.put('users', userKey, user)
+
+    return Promise.resolve()
+      .then(() => {
+        if (user.localAccountId) {
+          return this.saveAliasUserRecord(user.localAccountId, user.id)
+        }
+      })
+      .then(() => this.backend.put('users', userKey, user))
+  }
+
+  /**
+   * Saves an "alias" user object, used for linking local account IDs to
+   * external Web IDs.
+   *
+   * @param fromId {string}
+   * @param toId {string}
+   *
+   * @returns {Promise}
+   */
+  saveAliasUserRecord (fromId, toId) {
+    let aliasRecord = {
+      link: toId
+    }
+
+    let aliasKey = UserStore.normalizeIdKey(fromId)
+
+    return this.backend.put('users', aliasKey, aliasRecord)
   }
 
   /**
@@ -211,11 +237,20 @@ class UserStore {
    *
    * @param userId {string}
    *
-   * @return {Object} User info, parsed from a JSON string
+   * @return {Promise<Object>} User info, parsed from a JSON string
    */
   findUser (userId) {
     let userKey = UserStore.normalizeIdKey(userId)
+
     return this.backend.get('users', userKey)
+      .then(user => {
+        if (user && user.link) {
+          // this is an alias record, fetch the user it points to
+          return this.findUser(user.link)
+        }
+
+        return user
+      })
   }
 
   /**

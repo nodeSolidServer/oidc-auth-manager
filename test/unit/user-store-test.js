@@ -65,9 +65,14 @@ describe('UserStore', () => {
   })
 
   describe('createUser()', () => {
+    let store
+
+    beforeEach(() => {
+      store = UserStore.from({ path: './db' })
+    })
+
     it('should throw an error if no user is provided', (done) => {
       let password = '12345'
-      let store = UserStore.from({ path: './db' })
 
       store.createUser(null, password)
         .catch(error => {
@@ -79,7 +84,6 @@ describe('UserStore', () => {
     it('should throw an error if no user id is provided', (done) => {
       let user = {}
       let password = '12345'
-      let store = UserStore.from({ path: './db' })
 
       store.createUser(user, password)
         .catch(error => {
@@ -90,7 +94,6 @@ describe('UserStore', () => {
 
     it('should throw an error if no password is provided', (done) => {
       let user = { id: 'abc' }
-      let store = UserStore.from({ path: './db' })
 
       store.createUser(user, null)
         .catch(error => {
@@ -102,9 +105,8 @@ describe('UserStore', () => {
     it('should create a hashed password', () => {
       let user = { id: 'abc' }
       let password = '12345'
-      let store = UserStore.from({ path: './db' })
 
-      store.backend.put = sinon.stub().returns(Promise.resolve())
+      store.backend.put = sinon.stub().resolves()
       store.hashPassword = sinon.spy(store, 'hashPassword')
 
       return store.createUser(user, password)
@@ -116,9 +118,8 @@ describe('UserStore', () => {
     it('should save the user record', () => {
       let user = { id: 'abc' }
       let password = '12345'
-      let store = UserStore.from({ path: './db' })
 
-      store.backend.put = sinon.stub().returns(Promise.resolve())
+      store.backend.put = sinon.stub().resolves()
       store.saveUser = sinon.spy(store, 'saveUser')
 
       return store.createUser(user, password)
@@ -130,14 +131,84 @@ describe('UserStore', () => {
     it('should create an entry in the users-by-email index', () => {
       let user = { id: 'abc', email: 'alice@example.com' }
       let password = '12345'
-      let store = UserStore.from({ path: './db' })
 
-      store.backend.put = sinon.stub().returns(Promise.resolve())
+      store.backend.put = sinon.stub().resolves()
       store.saveUserByEmail = sinon.spy(store, 'saveUserByEmail')
 
       return store.createUser(user, password)
         .then(() => {
           expect(store.saveUserByEmail).to.have.been.calledWith(user)
+        })
+    })
+
+    it('should create a linking user record in case of external web id', () => {
+      let user = {
+        id: 'example.com/profile#me',
+        externalWebId: 'https://example.com/profile#me',
+        localAccountId: 'alice.solidtest.space/profile/card#me'
+      }
+      let password = '12345'
+
+      store.backend.put = (coll, key, value) => Promise.resolve(value)
+      sinon.spy(store.backend, 'put')
+
+      let externalKey = 'example.com%2Fprofile%23me'
+      let localAccountKey = 'alice.solidtest.space%2Fprofile%2Fcard%23me'
+
+      return store.createUser(user, password)
+        .then(() => {
+          // Make sure a regular user account with example.com key is created
+          expect(store.backend.put).to.have.been
+            .calledWith('users', externalKey)
+
+          // Make sure alice.solidtest.space -> example.com link is created
+          let aliasUserRecord = { link: 'example.com/profile#me' }
+          expect(store.backend.put).to.have.been
+            .calledWith('users', localAccountKey, aliasUserRecord)
+        })
+    })
+  })
+
+  describe('findUser', () => {
+    let store
+
+    beforeEach(() => {
+      store = UserStore.from({ path: './db' })
+    })
+
+    it('should look up user record by normalized user id', () => {
+      let userId = 'alice.solidtest.space/profile/card#me'
+      let user = {}
+
+      store.backend.get = sinon.stub().resolves(user)
+
+      return store.findUser(userId)
+        .then(fetchedUser => {
+          expect(fetchedUser).to.equal(user)
+
+          expect(store.backend.get).to.have.been
+            .calledWith('users', 'alice.solidtest.space%2Fprofile%2Fcard%23me')
+        })
+    })
+
+    it('should look up user record via an alias record', () => {
+      let aliasId = 'alice.solidtest.space/profile/card#me'
+      let aliasKey = 'alice.solidtest.space%2Fprofile%2Fcard%23me'
+      let aliasRecord = { link: 'example.com/profile#me' }
+
+      let userRecord = { name: 'Alice' }
+
+      store.backend.get = sinon.stub()
+
+      store.backend.get.withArgs('users', 'example.com%2Fprofile%23me')
+        .resolves(userRecord)
+
+      store.backend.get.withArgs('users', aliasKey)
+        .resolves(aliasRecord)
+
+      return store.findUser(aliasId)
+        .then(fetchedUser => {
+          expect(fetchedUser).to.equal(userRecord)
         })
     })
   })
