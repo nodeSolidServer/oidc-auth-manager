@@ -138,7 +138,8 @@ function parseProviderLink (headers) {
  */
 function validateProviderUri (provider, webId) {
   if (!provider) {
-    let error = new Error(`OIDC issuer not advertised for ${webId}`)
+    let error = new Error(`OIDC issuer not advertised for ${webId}.
+    See https://github.com/solid/webid-oidc-spec#authorized-oidc-issuer-discovery`)
     error.statusCode = 400
     throw error
   }
