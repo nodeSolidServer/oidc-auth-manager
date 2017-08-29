@@ -343,7 +343,7 @@ describe('OidcManager', () => {
         .to.be.true()
     })
 
-    it('should be false if audience is a different domain than sever', () => {
+    it('should be false if audience is a different domain than server', () => {
       expect(oidc.filterAudience('https://other.com')).to.be.false()
     })
   })
