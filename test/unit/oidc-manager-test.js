@@ -92,6 +92,7 @@ describe('OidcManager', () => {
       oidc.initRs()
 
       expect(oidc.rs.defaults.query).to.be.true()
+      expect(oidc.rs.defaults.realm).to.equal(providerUri)
       expect(oidc.rs).to.respondTo('authenticate')
     })
   })

@@ -232,6 +232,7 @@ class OidcManager {
         handleErrors: false,
         optional: true,
         query: true,
+        realm: this.providerUri,
         allow: {
           // Restrict token audience to either this serverUri or its subdomain
           audience: (aud) => this.filterAudience(aud)
