@@ -15,8 +15,6 @@ const { discoverProviderFor } = require('./preferred-provider')
 
 const DEFAULT_DB_PATH = './db/oidc'
 
-const DEFAULT_RS_CONFIG = { handleErrors: false, optional: true, query: true }
-
 class OidcManager {
   /**
    * @constructor
@@ -230,8 +228,17 @@ class OidcManager {
 
   initRs () {
     let rsConfig = {  // oidc-rs
-      defaults: DEFAULT_RS_CONFIG
+      defaults: {
+        handleErrors: false,
+        optional: true,
+        query: true,
+        allow: {
+          // Restrict token audience to either this serverUri or its subdomain
+          audience: (aud) => this.filterAudience(aud)
+        }
+      }
     }
+
     this.rs = new ResourceAuthenticator(rsConfig)
   }
 
@@ -408,6 +415,14 @@ class OidcManager {
     return webId
   }
 
+  filterAudience (aud) {
+    if (!Array.isArray(aud)) {
+      aud = [ aud ]
+    }
+
+    return aud.some(a => OidcManager.domainMatches(this.providerUri, a))
+  }
+
   /**
    * Tests whether a given Web ID uri belongs to the issuer. They must be:
    *   - either from the same domain origin
@@ -419,10 +434,18 @@ class OidcManager {
    * @returns {boolean}
    */
   static domainMatches (issuer, webId) {
-    webId = new URL(webId)
-    let webIdOrigin = webId.origin  // drop the path
+    let match
 
-    return (issuer === webIdOrigin) || OidcManager.isSubdomain(webIdOrigin, issuer)
+    try {
+      webId = new URL(webId)
+      let webIdOrigin = webId.origin  // drop the path
+
+      match = (issuer === webIdOrigin) || OidcManager.isSubdomain(webIdOrigin, issuer)
+    } catch (err) {
+      match = false
+    }
+
+    return match
   }
 
   /**
@@ -453,4 +476,3 @@ class OidcManager {
 
 module.exports = OidcManager
 module.exports.DEFAULT_DB_PATH = DEFAULT_DB_PATH
-module.exports.DEFAULT_RS_CONFIG = DEFAULT_RS_CONFIG
