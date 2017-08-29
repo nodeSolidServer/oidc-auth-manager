@@ -92,6 +92,7 @@ describe('OidcManager', () => {
       oidc.initRs()
 
       expect(oidc.rs.defaults.query).to.be.true()
+      expect(oidc.rs.defaults.realm).to.equal(providerUri)
       expect(oidc.rs).to.respondTo('authenticate')
     })
   })
@@ -314,6 +315,36 @@ describe('OidcManager', () => {
       let issuer = 'https://example.com:8080'
 
       expect(OidcManager.domainMatches(issuer, webId)).to.be.false()
+    })
+  })
+
+  describe('filterAudience', () => {
+    const providerUri = 'https://example.com'
+    const authCallbackUri = providerUri + '/api/oidc/rp'
+    const postLogoutUri = providerUri + '/goodbye'
+    const config = { providerUri, authCallbackUri, postLogoutUri }
+    const oidc = OidcManager.from(config)
+
+    it('should be false if no audience passed in', () => {
+      expect(oidc.filterAudience(undefined)).to.be.false()
+    })
+
+    it('should be true if audience origin equals server uri', () => {
+      expect(oidc.filterAudience('https://example.com/test')).to.be.true()
+    })
+
+    it('should be true if server uri is one of the audience matches', () => {
+      expect(oidc.filterAudience(['https://example.com/test', 'https://other.com']))
+        .to.be.true()
+    })
+
+    it('should be true if audience is a subdomain of server uri', () => {
+      expect(oidc.filterAudience('https://alice.example.com/profile#me'))
+        .to.be.true()
+    })
+
+    it('should be false if audience is a different domain than server', () => {
+      expect(oidc.filterAudience('https://other.com')).to.be.false()
     })
   })
 })

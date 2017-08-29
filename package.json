@@ -39,7 +39,7 @@
   "homepage": "https://github.com/solid/oidc-auth-manager",
   "dependencies": {
     "@trust/oidc-op": "^0.3.0",
-    "@trust/oidc-rs": "^0.2.1",
+    "@trust/oidc-rs": "^0.3.0",
     "bcryptjs": "^2.4.3",
     "fs-extra": "^4.0.1",
     "kvplus-files": "0.0.4",
