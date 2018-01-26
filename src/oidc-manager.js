@@ -10,6 +10,8 @@ const MultiRpClient = require('solid-multi-rp-client')
 const OIDCProvider = require('@trust/oidc-op')
 const UserStore = require('./user-store')
 
+const sleep = require('system-sleep')
+
 const HostAPI = require('./host-api')
 const { discoverProviderFor } = require('./preferred-provider')
 
@@ -60,6 +62,7 @@ class OidcManager {
     this.users = null
 
     this.debug = options.debug || console.log.bind(console)
+    this.delayBeforeRegisteringInitialClient = options.delayBeforeRegisteringInitialClient
   }
 
   /**
@@ -151,6 +154,14 @@ class OidcManager {
       })
       .then(() => {
         this.saveProviderConfig()
+
+        // Use-case: if solid server is deployed behind a load-balancer (e.g. F5, Nginx) there may be a delay between
+        // when the server starting up and the load balancer detected that it's up, which would cause failures when the
+        // solid server is trying to register an **it's own local** initial RP client (i.e. the it won't see itself and
+        // we'll get an ECONNRESET error!).
+        if (this.delayBeforeRegisteringInitialClient) {
+          sleep(this.delayBeforeRegisteringInitialClient)
+        }
 
         return this.initLocalRpClient()
       })
