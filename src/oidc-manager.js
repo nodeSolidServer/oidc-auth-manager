@@ -43,6 +43,9 @@ class OidcManager {
    * @param [options.saltRounds] {number} Number of bcrypt password salt rounds
    *
    * @param [options.debug] {Function} Debug function (defaults to console.log)
+   *
+   * @param [config.delayBeforeRegisteringInitialClient] {number} Number of
+   *   milliseconds to delay before initializing a local RP client.
    */
   constructor (options) {
     this.storePaths = options.storePaths
@@ -87,6 +90,9 @@ class OidcManager {
    * Config for UserStore:
    * @param [config.saltRounds] {number} Number of bcrypt password salt rounds
    *
+   * @param [config.delayBeforeRegisteringInitialClient] {number} Number of
+   *   milliseconds to delay before initializing a local RP client.
+   *
    * @return {OidcManager}
    */
   static from (config) {
@@ -97,6 +103,7 @@ class OidcManager {
       authCallbackUri: config.authCallbackUri,
       postLogoutUri: config.postLogoutUri,
       saltRounds: config.saltRounds,
+      delayBeforeRegisteringInitialClient: config.delayBeforeRegisteringInitialClient,
       storePaths: OidcManager.storePathsFrom(config.dbPath)
     }
     let oidc = new OidcManager(options)
@@ -155,12 +162,18 @@ class OidcManager {
       .then(() => {
         this.saveProviderConfig()
 
-        // Use-case: if solid server is deployed behind a load-balancer (e.g. F5, Nginx) there may be a delay between
-        // when the server starting up and the load balancer detected that it's up, which would cause failures when the
-        // solid server is trying to register an **it's own local** initial RP client (i.e. the it won't see itself and
+        // Use-case: if solid server is deployed behind a load-balancer
+        // (e.g. F5, Nginx) there may be a delay between
+        // when the server starting up and the load balancer detected that it's
+        // up, which would cause failures when the
+        // solid server is trying to register an **its own local** initial
+        // RP client (i.e. the it won't see itself and
         // we'll get an ECONNRESET error!).
         if (this.delayBeforeRegisteringInitialClient) {
+          this.debug(`Sleeping for ${this.delayBeforeRegisteringInitialClient} milliseconds`)
           sleep(this.delayBeforeRegisteringInitialClient)
+        } else {
+          this.debug('Not sleeping before client registration...')
         }
 
         return this.initLocalRpClient()
