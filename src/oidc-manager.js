@@ -10,7 +10,7 @@ const MultiRpClient = require('solid-multi-rp-client')
 const OIDCProvider = require('@trust/oidc-op')
 const UserStore = require('./user-store')
 
-const sleep = require('./user-store')
+const sleep = require('system-sleep')
 
 const HostAPI = require('./host-api')
 const { discoverProviderFor } = require('./preferred-provider')
