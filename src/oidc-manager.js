@@ -10,8 +10,6 @@ const MultiRpClient = require('solid-multi-rp-client')
 const OIDCProvider = require('@trust/oidc-op')
 const UserStore = require('./user-store')
 
-const sleep = require('system-sleep')
-
 const HostAPI = require('./host-api')
 const { discoverProviderFor } = require('./preferred-provider')
 
@@ -171,13 +169,13 @@ class OidcManager {
         // we'll get an ECONNRESET error!).
         if (this.delayBeforeRegisteringInitialClient) {
           this.debug(`Sleeping for ${this.delayBeforeRegisteringInitialClient} milliseconds`)
-          sleep(this.delayBeforeRegisteringInitialClient)
+          return new Promise(resolve =>
+            setTimeout(resolve, this.delayBeforeRegisteringInitialClient))
         } else {
           this.debug('Not sleeping before client registration...')
         }
-
-        return this.initLocalRpClient()
       })
+      .then(() => this.initLocalRpClient())
       .catch(this.debug)
   }
 
