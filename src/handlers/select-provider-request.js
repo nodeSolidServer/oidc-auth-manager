@@ -12,6 +12,8 @@ class SelectProviderRequest {
    * @param [options.oidcManager] {OidcManager}
    * @param [options.response] {HttpResponse}
    * @param [options.serverUri] {string}
+   * @param [options.returnToUrl] {string} Encoded url of the original resource
+   *   a client was trying to access before being redirected to select provider
    */
   constructor (options) {
     this.webId = options.webId
@@ -19,6 +21,7 @@ class SelectProviderRequest {
     this.response = options.response
     this.session = options.session
     this.serverUri = options.serverUri
+    this.returnToUrl = options.returnToUrl
   }
 
   /**
@@ -58,8 +61,9 @@ class SelectProviderRequest {
    * @return {SelectProviderRequest}
    */
   static fromParams (req, res) {
-    let body = req.body || {}
-    let webId = SelectProviderRequest.normalizeUri(body.webid)
+    const body = req.body || {}
+    const query = req.query || {}
+    const webId = SelectProviderRequest.normalizeUri(body.webid)
 
     let oidcManager, serverUri
     if (req.app && req.app.locals) {
@@ -72,6 +76,7 @@ class SelectProviderRequest {
       webId,
       oidcManager,
       serverUri,
+      returnToUrl: query.returnToUrl,
       response: res,
       session: req.session
     }
@@ -124,6 +129,7 @@ class SelectProviderRequest {
   static handlePost (request) {
     return Promise.resolve()
       .then(() => request.validate())
+      .then(() => request.saveReturnToUrl())
       .then(() => request.selectProvider())
       .catch(err => request.error(err))
   }
@@ -161,6 +167,15 @@ class SelectProviderRequest {
         return this.authUrlFor(providerUrl)
       })
       .then(providerAuthUrl => this.response.redirect(providerAuthUrl))
+  }
+
+  /**
+   * Saves `returnToUrl` param for later use in AuthCallbackRequest handler,
+   * to redirect the client to the original resource they were trying to access
+   * before entering the authn workflow.
+   */
+  saveReturnToUrl () {
+    this.session.returnToUrl = this.returnToUrl
   }
 
   /**
