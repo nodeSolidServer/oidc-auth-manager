@@ -55,17 +55,17 @@ class AuthCallbackRequest {
     }
 
     let requestUri = AuthCallbackRequest.fullUriFor(req)
-
     let issuer = AuthCallbackRequest.extractIssuer(req)
+    let returnToUrl = AuthCallbackRequest.extractReturnToUrl(req.session)
 
     let options = {
       issuer,
       requestUri,
       oidcManager,
       serverUri,
+      returnToUrl,
       response: res,
-      session: req.session,
-      returnToUrl: req.session.returnToUrl
+      session: req.session
     }
 
     let request = new AuthCallbackRequest(options)
@@ -94,6 +94,20 @@ class AuthCallbackRequest {
 
   static extractIssuer (req) {
     return req.params && decodeURIComponent(req.params.issuer_id)
+  }
+
+  /**
+   * Extracts the `returnToUrl` that was stored in session during the
+   * SelectProviderRequest handling.
+   *
+   * @param session
+   *
+   * @returns {string|null}
+   */
+  static extractReturnToUrl (session) {
+    const returnToUrl = session.returnToUrl
+
+    return returnToUrl ? decodeURIComponent(returnToUrl) : null
   }
 
   validate () {
@@ -158,6 +172,7 @@ class AuthCallbackRequest {
     this.debug('  Resuming workflow, redirecting to ' + this.returnToUrl)
 
     delete this.session.returnToUrl
+
     return this.response.redirect(302, this.returnToUrl)
   }
 }

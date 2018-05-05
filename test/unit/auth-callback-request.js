@@ -77,7 +77,8 @@ describe('AuthCallbackRequest', () => {
 
       let oidcManager = {}
       let host = { serverUri: 'https://example.com' }
-      let session = { returnToUrl: 'https://example.com/resource' }
+      let returnToUrl = 'https://example.com/resource#hash'
+      let session = { returnToUrl: encodeURIComponent(returnToUrl) }
 
       let req = {
         session,
@@ -96,7 +97,24 @@ describe('AuthCallbackRequest', () => {
       expect(request.oidcManager).to.equal(oidcManager)
       expect(request.response).to.equal(res)
       expect(request.session).to.equal(session)
-      expect(request.returnToUrl).to.equal(session.returnToUrl)
+      expect(request.returnToUrl).to.equal(returnToUrl)
+    })
+  })
+
+  describe('static extractReturnToUrl()', () => {
+    it('should return null if no returnToUrl is present in session', () => {
+      let session = {}
+
+      expect(AuthCallbackRequest.extractReturnToUrl(session))
+        .to.be.null()
+    })
+
+    it('should return a url-decoded returnToUrl from session', () => {
+      let returnToUrl = 'https://example.com/resource#hash'
+      let session = { returnToUrl: encodeURIComponent(returnToUrl) }
+
+      expect(AuthCallbackRequest.extractReturnToUrl(session))
+        .to.equal(returnToUrl)
     })
   })
 
