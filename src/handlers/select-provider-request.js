@@ -12,7 +12,7 @@ class SelectProviderRequest {
    * @param [options.oidcManager] {OidcManager}
    * @param [options.response] {HttpResponse}
    * @param [options.serverUri] {string}
-   * @param [options.returnToUrl] {string} Encoded url of the original resource
+   * @param [options.returnToUrl] {string} Url of the original resource
    *   a client was trying to access before being redirected to select provider
    */
   constructor (options) {

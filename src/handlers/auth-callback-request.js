@@ -56,14 +56,13 @@ class AuthCallbackRequest {
 
     let requestUri = AuthCallbackRequest.fullUriFor(req)
     let issuer = AuthCallbackRequest.extractIssuer(req)
-    let returnToUrl = AuthCallbackRequest.extractReturnToUrl(req.session)
 
     let options = {
       issuer,
       requestUri,
       oidcManager,
       serverUri,
-      returnToUrl,
+      returnToUrl: req.session.returnToUrl,
       response: res,
       session: req.session
     }
@@ -94,20 +93,6 @@ class AuthCallbackRequest {
 
   static extractIssuer (req) {
     return req.params && decodeURIComponent(req.params.issuer_id)
-  }
-
-  /**
-   * Extracts the `returnToUrl` that was stored in session during the
-   * SelectProviderRequest handling.
-   *
-   * @param session
-   *
-   * @returns {string|null}
-   */
-  static extractReturnToUrl (session) {
-    const returnToUrl = session.returnToUrl
-
-    return returnToUrl ? decodeURIComponent(returnToUrl) : null
   }
 
   validate () {
