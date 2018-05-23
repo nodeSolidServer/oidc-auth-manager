@@ -16,14 +16,14 @@ class LoginConsentRequest {
   static handle (opAuthRequest, skipConsent = false) {
     let notLoggedIn = !opAuthRequest.subject
     if (notLoggedIn) {
-      return Promise.resolve(opAuthRequest)  // pass through
+      return Promise.resolve(opAuthRequest) // pass through
     }
 
     let consentRequest = LoginConsentRequest.from(opAuthRequest)
 
     if (skipConsent) {
       consentRequest.markConsentSuccess(opAuthRequest)
-      return Promise.resolve(opAuthRequest)  // pass through
+      return Promise.resolve(opAuthRequest) // pass through
     }
 
     return LoginConsentRequest.obtainConsent(consentRequest)
