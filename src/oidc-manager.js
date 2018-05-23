@@ -249,7 +249,7 @@ class OidcManager {
   }
 
   initRs () {
-    let rsConfig = {  // oidc-rs
+    let rsConfig = { // oidc-rs
       defaults: {
         handleErrors: false,
         optional: true,
@@ -381,7 +381,7 @@ class OidcManager {
     // Otherwise, verify that issuer is the preferred OIDC provider for the web id
     return discoverProviderFor(webId)
       .then(preferredProvider => {
-        if (preferredProvider === issuer) {  // everything checks out
+        if (preferredProvider === issuer) { // everything checks out
           return webId
         }
 
@@ -461,7 +461,7 @@ class OidcManager {
 
     try {
       webId = new URL(webId)
-      let webIdOrigin = webId.origin  // drop the path
+      let webIdOrigin = webId.origin // drop the path
 
       match = (issuer === webIdOrigin) || OidcManager.isSubdomain(webIdOrigin, issuer)
     } catch (err) {
@@ -482,10 +482,10 @@ class OidcManager {
     domain = new URL(domain)
 
     if (subdomain.protocol !== domain.protocol) {
-      return false  // protocols must match
+      return false // protocols must match
     }
 
-    subdomain = subdomain.host  // hostname + port, minus the protocol
+    subdomain = subdomain.host // hostname + port, minus the protocol
     domain = domain.host
 
     // Chop off the first subdomain (alice.databox.me -> databox.me)

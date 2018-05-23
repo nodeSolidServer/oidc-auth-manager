@@ -77,7 +77,7 @@ function authenticatedUser (authRequest) {
  */
 function initSubjectClaim (authRequest, webId) {
   authRequest.subject = {
-    _id: webId  // put webId into the IDToken's subject claim
+    _id: webId // put webId into the IDToken's subject claim
   }
 }
 

@@ -67,12 +67,12 @@ describe('preferred-provider.js', () => {
     it('should throw an error if webid is reachable but no provider uri found', done => {
       nock(serverUri)
         .options('/')
-        .reply(204, 'No content')  // no provider uri in OPTIONS headers
+        .reply(204, 'No content') // no provider uri in OPTIONS headers
 
       nock(serverUri)
         .get('/')
         .reply(200, '', {
-          'Content-Type': 'text/turtle'  // no provider triple in the profile
+          'Content-Type': 'text/turtle' // no provider triple in the profile
         })
 
       provider.discoverProviderFor(webId)
