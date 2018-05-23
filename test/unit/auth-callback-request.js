@@ -77,7 +77,8 @@ describe('AuthCallbackRequest', () => {
 
       let oidcManager = {}
       let host = { serverUri: 'https://example.com' }
-      let session = { returnToUrl: 'https://example.com/resource' }
+      let returnToUrl = 'https://example.com/resource#hash'
+      let session = { returnToUrl }
 
       let req = {
         session,
@@ -96,7 +97,7 @@ describe('AuthCallbackRequest', () => {
       expect(request.oidcManager).to.equal(oidcManager)
       expect(request.response).to.equal(res)
       expect(request.session).to.equal(session)
-      expect(request.returnToUrl).to.equal(session.returnToUrl)
+      expect(request.returnToUrl).to.equal(returnToUrl)
     })
   })
 
