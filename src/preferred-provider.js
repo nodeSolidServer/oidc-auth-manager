@@ -24,7 +24,7 @@ function preferredProviderFor (uri) {
   return providerExists(uri)
     .then(providerUri => {
       if (providerUri) {
-        return providerUri  // the given uri's origin hosts an OIDC provider
+        return providerUri // the given uri's origin hosts an OIDC provider
       }
 
       // Given uri is not a provider (for example, a static Web ID profile URI)
@@ -72,7 +72,7 @@ function discoverProviderFor (webId) {
         providerUri = (new URL(providerUri)).origin
       }
 
-      validateProviderUri(providerUri, webId)  // Throw an error if empty or invalid
+      validateProviderUri(providerUri, webId) // Throw an error if empty or invalid
 
       return providerUri
     })

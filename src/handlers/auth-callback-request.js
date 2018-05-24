@@ -55,7 +55,6 @@ class AuthCallbackRequest {
     }
 
     let requestUri = AuthCallbackRequest.fullUriFor(req)
-
     let issuer = AuthCallbackRequest.extractIssuer(req)
 
     let options = {
@@ -63,9 +62,9 @@ class AuthCallbackRequest {
       requestUri,
       oidcManager,
       serverUri,
+      returnToUrl: req.session.returnToUrl,
       response: res,
-      session: req.session,
-      returnToUrl: req.session.returnToUrl
+      session: req.session
     }
 
     let request = new AuthCallbackRequest(options)
@@ -158,6 +157,7 @@ class AuthCallbackRequest {
     this.debug('  Resuming workflow, redirecting to ' + this.returnToUrl)
 
     delete this.session.returnToUrl
+
     return this.response.redirect(302, this.returnToUrl)
   }
 }

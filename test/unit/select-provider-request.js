@@ -79,6 +79,9 @@ describe('SelectProviderRequest', () => {
     let res = HttpMocks.createResponse()
     let serverUri = 'https://example.com'
 
+    // 'https%3A%2F%2Foriginal.com%2Fpath%23hash'
+    const returnToUrl = encodeURIComponent('https://original.com/path#hash')
+
     it('should initialize a SelectProviderRequest instance', () => {
       let aliceWebId = 'https://alice.example.com'
       let oidcManager = {}
@@ -86,6 +89,7 @@ describe('SelectProviderRequest', () => {
       let req = {
         session,
         body: { webid: aliceWebId },
+        query: { returnToUrl },
         app: { locals: { oidc: oidcManager, host: { serverUri } } }
       }
 
@@ -95,6 +99,7 @@ describe('SelectProviderRequest', () => {
       expect(request.oidcManager).to.equal(oidcManager)
       expect(request.session).to.equal(session)
       expect(request.serverUri).to.equal(serverUri)
+      expect(request.returnToUrl).to.equal(returnToUrl)
     })
 
     it('should attempt to normalize an invalid webid uri', () => {
@@ -123,6 +128,19 @@ describe('SelectProviderRequest', () => {
       SelectProviderRequest.get(req, res)
 
       expect(res.render).to.have.been.calledWith('auth/select-provider', { serverUri })
+    })
+  })
+
+  describe('saveReturnToUrl()', () => {
+    it('should save the returnToUrl in session', () => {
+      let response = HttpMocks.createResponse()
+      let session = {}
+      let returnToUrl = encodeURIComponent('https://example.com/path#hash')
+      let request = new SelectProviderRequest({ response, session, returnToUrl })
+
+      request.saveReturnToUrl()
+
+      expect(request.session.returnToUrl).to.equal(returnToUrl)
     })
   })
 
@@ -178,11 +196,13 @@ describe('SelectProviderRequest', () => {
 
       request.validate = sinon.stub().resolves()
       request.selectProvider = sinon.stub().resolves()
+      request.saveReturnToUrl = sinon.stub()
 
       return SelectProviderRequest.handlePost(request)
         .then(() => {
           expect(request.validate).to.have.been.called()
           expect(request.selectProvider).to.have.been.called()
+          expect(request.saveReturnToUrl).to.have.been.called()
         })
     })
 
