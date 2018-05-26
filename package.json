@@ -6,12 +6,12 @@
   "scripts": {
     "standard": "standard",
     "test": "npm run standard && npm run mocha",
-    "mocha": "nyc mocha --exit test/**/*.js",
+    "mocha": "nyc mocha --exit --timeout=10000 test/**/*.js",
     "preversion": "npm test",
     "postversion": "git push --follow-tags"
   },
   "engines": {
-    "node": ">=6.0"
+    "node": ">=8.10"
   },
   "repository": {
     "type": "git",
@@ -45,7 +45,7 @@
     "kvplus-files": "0.0.4",
     "li": "^1.2.1",
     "node-fetch": "^1.7.1",
-    "rdflib": "^0.16.3",
+    "rdflib": "0.16.7",
     "solid-multi-rp-client": "^0.2.1",
     "valid-url": "^1.0.9"
   },
