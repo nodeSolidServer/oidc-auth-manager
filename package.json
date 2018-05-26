@@ -38,7 +38,7 @@
   },
   "homepage": "https://github.com/solid/oidc-auth-manager",
   "dependencies": {
-    "@trust/oidc-op": "^0.3.1",
+    "@trust/oidc-op": "solid/oidc-op",
     "@trust/oidc-rs": "^0.3.1",
     "bcryptjs": "^2.4.3",
     "fs-extra": "^4.0.1",
