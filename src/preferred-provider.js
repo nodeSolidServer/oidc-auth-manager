@@ -99,7 +99,7 @@ function discoverFromProfile (webId) {
 
   const fetcher = rdf.fetcher(store)
 
-  return fetcher.fetch(webId, { force: true })
+  return fetcher.load(webId, { force: true })
     .then(response => {
       if (!response.ok) {
         let error = new Error(`Could not reach Web ID ${webId} to discover provider`)
