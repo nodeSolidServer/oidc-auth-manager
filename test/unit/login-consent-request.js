@@ -88,7 +88,7 @@ describe('LoginConsentRequest', () => {
       return LoginConsentRequest.handle(opAuthRequest)
         .then(() => {
           expect(obtainConsent).to.have.been.called()
-          obtainConsent.reset()
+          obtainConsent.resetHistory()
         })
     })
 
@@ -100,7 +100,7 @@ describe('LoginConsentRequest', () => {
       return LoginConsentRequest.handle(opAuthRequest, skipConsent)
         .then(() => {
           expect(LoginConsentRequest.obtainConsent).to.not.have.been.called()
-          LoginConsentRequest.obtainConsent.reset()
+          LoginConsentRequest.obtainConsent.resetHistory()
         })
     })
 
