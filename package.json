@@ -6,7 +6,7 @@
   "scripts": {
     "standard": "standard",
     "test": "npm run standard && npm run mocha",
-    "mocha": "nyc mocha --exit --timeout=10000 test/**/*.js",
+    "mocha": "nyc mocha --exit --timeout=20000 test/**/*.js",
     "preversion": "npm test",
     "postversion": "git push --follow-tags"
   },
