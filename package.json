@@ -38,15 +38,15 @@
   },
   "homepage": "https://github.com/solid/oidc-auth-manager",
   "dependencies": {
-    "@trust/oidc-op": "solid/oidc-op",
-    "@trust/oidc-rs": "solid/oidc-rs",
+    "@trust/oidc-op": "solid/oidc-op#rc-0.3.2",
+    "@trust/oidc-rs": "solid/oidc-rs#rc-0.3.2",
     "bcryptjs": "^2.4.3",
     "fs-extra": "^6.0.1",
     "kvplus-files": "0.0.4",
     "li": "^1.3.0",
     "node-fetch": "^2.1.2",
     "rdflib": "0.16.7",
-    "solid-multi-rp-client": "^0.3.0",
+    "solid-multi-rp-client": "^0.4.0",
     "valid-url": "^1.0.9"
   },
   "devDependencies": {
