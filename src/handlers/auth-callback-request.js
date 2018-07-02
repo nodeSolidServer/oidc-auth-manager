@@ -21,18 +21,19 @@ class AuthCallbackRequest {
    *   router.get('/api/oidc/rp/:issuer_id', AuthCallbackRequest.get)
    *   ```
    *
-   * @param req
-   * @param res
+   * @param req {IncomingRequest}
+   * @param res {ServerResponse}
+   * @param next {Function}
    *
    * @returns {Promise}
    */
-  static get (req, res) {
+  static get (req, res, next) {
     const request = AuthCallbackRequest.fromParams(req, res)
 
     return AuthCallbackRequest.handle(request)
       .catch(error => {
-        request.debug('Error in AuthCallbackRequest:', error)
-        res.redirect('/login')
+        request.debug('Error in AuthCallbackRequest.get:', error)
+        next(error)
       })
   }
 
@@ -110,25 +111,26 @@ class AuthCallbackRequest {
   }
 
   /**
-   * @param session
+   * @param rpSession {Session} RelyingParty Session object
    *
    * @returns {Promise}
    */
-  initSessionUserAuth (session) {
-    Object.assign(this.session, session)
-
-    let claims = session.decoded.payload
-
-    return this.oidcManager.webIdFromClaims(claims)
-      .then(webId => {
-        this.session.userId = webId
-      })
-      .catch(err => {
-        let error = new Error('Could not verify Web ID from token claims')
-        error.statusCode = 401
-        error.cause = err
-        throw error
-      })
+  async initSessionUserAuth (rpSession) {
+    try {
+      const webId = await this.oidcManager.webIdFromClaims(rpSession.idClaims)
+      this.session.userId = webId
+      this.session.credentials = {
+        webId,
+        idClaims: rpSession.idClaims,
+        authorization: rpSession.authorization
+      }
+    } catch (err) {
+      let error = new Error('Could not verify Web ID from token claims')
+      error.statusCode = 401
+      error.cause = err
+      error.info = { credentials: this.session.credentials }
+      throw error
+    }
   }
 
   /**
