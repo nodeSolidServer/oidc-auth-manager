@@ -134,30 +134,34 @@ describe('AuthCallbackRequest', () => {
   })
 
   describe('initSessionUserAuth()', () => {
-    let accessToken = {}
-    let refreshToken = {}
-    let decodedClaims = {}
-    let sessionResponse = {
-      accessToken,
-      refreshToken,
-      decoded: { payload: decodedClaims }
+    const aliceWebId = 'https://alice.example.com/#me'
+    const idClaims = {
+      sub: aliceWebId,
+      iss: 'https://example.com'
     }
+    const authorization = {}
+    const rpSession = { idClaims, authorization }
 
-    it('should init session with user credentials', () => {
-      let aliceWebId = 'https://alice.example.com/#me'
-      let oidcManager = {}
+    it('should init session with user credentials', async () => {
+      const oidcManager = {}
       oidcManager.webIdFromClaims = sinon.stub().resolves(aliceWebId)
 
       let request = new AuthCallbackRequest({ session: {}, oidcManager })
 
-      return request.initSessionUserAuth(sessionResponse)
-        .then(() => {
-          let session = request.session
-          expect(session.accessToken).to.equal(accessToken)
-          expect(session.refreshToken).to.equal(refreshToken)
-          expect(oidcManager.webIdFromClaims).to.have.been.calledWith(decodedClaims)
-          expect(session.userId).to.equal(aliceWebId)
-        })
+      await request.initSessionUserAuth(rpSession)
+
+      expect(oidcManager.webIdFromClaims).to.have.been.calledWith(idClaims)
+
+      const { session } = request // Express cookie session
+
+      expect(session.userId).to.equal(aliceWebId)
+
+      const expectedCredentials = {
+        webId: aliceWebId,
+        idClaims,
+        authorization
+      }
+      expect(session.credentials).to.eql(expectedCredentials)
     })
   })
 
