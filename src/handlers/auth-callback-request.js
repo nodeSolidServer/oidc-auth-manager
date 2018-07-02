@@ -21,18 +21,19 @@ class AuthCallbackRequest {
    *   router.get('/api/oidc/rp/:issuer_id', AuthCallbackRequest.get)
    *   ```
    *
-   * @param req
-   * @param res
+   * @param req {IncomingRequest}
+   * @param res {ServerResponse}
+   * @param next {Function}
    *
    * @returns {Promise}
    */
-  static get (req, res) {
+  static get (req, res, next) {
     const request = AuthCallbackRequest.fromParams(req, res)
 
     return AuthCallbackRequest.handle(request)
       .catch(error => {
-        request.debug('Error in AuthCallbackRequest:', error)
-        res.redirect('/login')
+        request.debug('Error in AuthCallbackRequest.get:', error)
+        next(error)
       })
   }
 
