@@ -4,7 +4,6 @@ const { URL } = require('whatwg-url')
 const validUrl = require('valid-url')
 const fetch = require('node-fetch')
 const li = require('li')
-const rdf = require('rdflib')
 
 module.exports = {
   discoverProviderFor,
@@ -64,8 +63,6 @@ function providerExists (uri) {
 function discoverProviderFor (webId) {
   return discoverFromHeaders(webId)
 
-    .then(providerFromHeaders => providerFromHeaders || discoverFromProfile(webId))
-
     .then(providerUri => {
       // drop the path (provider origin only)
       if (providerUri) {
@@ -91,26 +88,6 @@ function discoverFromHeaders (webId) {
       }
 
       return null
-    })
-}
-
-function discoverFromProfile (webId) {
-  const store = rdf.graph()
-
-  const fetcher = rdf.fetcher(store)
-
-  return fetcher.load(webId, { force: true })
-    .then(response => {
-      if (!response.ok) {
-        let error = new Error(`Could not reach Web ID ${webId} to discover provider`)
-        error.statusCode = 400
-        throw error
-      }
-
-      let providerTerm = rdf.namedNode('http://www.w3.org/ns/solid/terms#oidcIssuer')
-      let providerUri = store.anyValue(rdf.namedNode(webId), providerTerm)
-
-      return providerUri
     })
 }
 
