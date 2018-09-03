@@ -84,8 +84,8 @@ describe('preferred-provider.js', () => {
 
     it('should throw an error if web id is unreachable', done => {
       nock(serverUri)
-        .options('/')
-        .reply(404)
+        .get('/').reply(404)
+        .options('/').reply(404)
 
       provider.discoverProviderFor(webId)
         .catch(err => {
