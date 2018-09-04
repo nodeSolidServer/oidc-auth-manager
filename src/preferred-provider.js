@@ -101,16 +101,14 @@ function discoverFromProfile (webId) {
 
   return fetcher.load(webId, { force: true })
     .then(response => {
-      if (!response.ok) {
-        let error = new Error(`Could not reach Web ID ${webId} to discover provider`)
-        error.statusCode = 400
-        throw error
-      }
-
       let providerTerm = rdf.namedNode('http://www.w3.org/ns/solid/terms#oidcIssuer')
       let providerUri = store.anyValue(rdf.namedNode(webId), providerTerm)
-
       return providerUri
+    }, err => {
+      let error = new Error(`Could not reach Web ID ${webId} to discover provider`)
+      error.cause = err
+      error.statusCode = 400
+      throw error
     })
 }
 
