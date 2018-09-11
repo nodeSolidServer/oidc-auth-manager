@@ -64,6 +64,23 @@ describe('preferred-provider.js', () => {
         })
     })
 
+    it('should extract and validate the provider uri from the webid profile with multi oidcIssuer', () => {
+      nock(serverUri)
+        .options('/')
+        .reply(204, 'No content')
+
+      nock(serverUri)
+        .get('/')
+        .reply(200, sampleProfileSrc, {
+          'Content-Type': 'text/turtle'
+        })
+
+      return provider.discoverProviderFor(webId, 'https://provider.com')
+        .then(providerUri => {
+          expect(providerUri).to.equal('https://provider.com')
+        })
+    })
+
     it('should throw an error if webid is reachable but no provider uri found', done => {
       nock(serverUri)
         .options('/')
