@@ -73,29 +73,27 @@ function discoverProviderFor (webId, issuer) {
 
         for (let i = 0; i < list.length; i++) {
           lastErr = null
-          providerUri = list[i];
+          providerUri = list[i]
           if (providerUri) {
             providerUri = (new URL(providerUri)).origin
           }
-        
+
           try {
             validateProviderUri(providerUri, webId) // Throw an error if empty or invalid
           } catch (err) {
             lastErr = err
           }
 
-          if (lastErr == null && issuer && providerUri == issuer) {
+          if (lastErr === null && issuer && providerUri === issuer) {
             return providerUri
           }
         }
         if (lastErr) {
-          throw lastErr 
+          throw lastErr
         } else {
           validateProviderUri(null, webId) // Throw an error if empty or invalid
         }
-
-      } else { 
-
+      } else {
         // drop the path (provider origin only)
         if (providerUri) {
           providerUri = (new URL(providerUri)).origin
@@ -139,9 +137,9 @@ function discoverAllFromProfile (webId) {
 
       let providerTerm = rdf.namedNode('http://www.w3.org/ns/solid/terms#oidcIssuer')
       let idp = store.each(rdf.namedNode(webId), providerTerm, undefined)
-      let list = [];
+      let list = []
 
-      for(let i = 0; i < idp.length; i++) {
+      for (let i = 0; i < idp.length; i++) {
         if (idp[i].uri) {
           list.push(idp[i].uri)
         }
