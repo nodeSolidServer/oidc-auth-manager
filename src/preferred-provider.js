@@ -84,7 +84,7 @@ function discoverProviderFor (webId, issuer) {
             lastErr = err
           }
 
-          if (lastErr === null && (issuer && providerUri === issuer) || !issuer) {
+          if (lastErr === null && ((issuer && providerUri === issuer) || !issuer)) {
             return providerUri
           }
         }
