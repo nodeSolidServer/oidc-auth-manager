@@ -37,7 +37,7 @@ class LogoutRequest {
 
   static parseReturnUrl (req) {
     let query = req.query || {}
-    return query.post_logout_redirect_uri ? query.post_logout_redirect_uri :  query.returnToUrl
+    return query.post_logout_redirect_uri ? query.post_logout_redirect_uri : query.returnToUrl
   }
 
   static logout (request) {
