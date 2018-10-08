@@ -143,4 +143,26 @@ describe('UserStore (integration)', () => {
         })
     })
   })
+  describe('deleteUser()', () => {
+    it('deletes a previously saved user', () => {
+      let options = { path: dbPath, saltRounds: 2 }
+      let store = UserStore.from(options)
+      store.initCollections()
+
+      let user = {
+        id: 'alice.example.com',
+        email: 'alice@example.com'
+      }
+      let password = '12345'
+
+      return store.createUser(user, password)
+        .then(() => {
+          return store.deleteUser(user)
+        })
+        .then(foundUser => {
+          expect(foundUser.id).to.not.exist()
+          expect(foundUser.email).to.not.exist()
+        })
+    })
+  })
 })
