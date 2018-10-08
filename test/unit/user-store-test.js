@@ -212,4 +212,23 @@ describe('UserStore', () => {
         })
     })
   })
+
+  describe('deleteUser', () => {
+    let store
+
+    beforeEach(() => {
+      store = UserStore.from({ path: './db' })
+    })
+
+    it('should look up, delete and look up again a user record by normalized user id', () => {
+      let userId = 'alice.solidtest.space/profile/card#me'
+
+      let user = store.findUser(userId)
+
+      return store.deleteUser(user)
+        .then(() => {
+          expect(store.findUser(userId).to.be.false)
+        })
+    })
+  })
 })
