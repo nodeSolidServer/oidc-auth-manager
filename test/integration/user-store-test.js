@@ -157,11 +157,20 @@ describe('UserStore (integration)', () => {
 
       return store.createUser(user, password)
         .then(() => {
-          return store.deleteUser(user)
+          return store.findUser(user.id)
         })
         .then(foundUser => {
-          expect(foundUser.id).to.not.exist()
-          expect(foundUser.email).to.not.exist()
+          expect(foundUser.id).to.equal(user.id)
+          expect(foundUser.email).to.equal(user.email)
+        })
+        .then(() => {
+          return store.deleteUser(user)
+        })
+        .then(() => {
+          return store.findUser(user.id)
+        })
+        .then(foundUser => {
+          expect(foundUser).to.not.exist()
         })
     })
   })
