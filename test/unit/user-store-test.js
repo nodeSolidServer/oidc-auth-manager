@@ -213,25 +213,20 @@ describe('UserStore', () => {
     })
   })
 
-/*  describe('deleteUser', () => {
+  describe('deleteUser', () => {
     let store
 
     beforeEach(() => {
       store = UserStore.from({ path: './db' })
     })
 
-    it('should look up, delete and look up again a user record by normalized user id', () => {
+    it('should call backend.del with normalized user id', () => {
       let userId = 'alice.solidtest.space/profile/card#me'
-      let user = {}
-      let founduser = store.findUser(userId)
 
-      console.log(founduser.id)
-      store.backend.del = sinon.stub().resolves(user)
+      store.backend.del = sinon.stub()
 
-      return store.deleteUser(founduser)
-        .then(() => {
-          expect(store.findUser(userId).to.be.false)
-        })
+      return store.deleteUser({ id: userId })
+        .then(() => expect(store.backend.del).to.have.been.calledWith('users', UserStore.normalizeIdKey(userId)))
     })
-  }) */
+  })
 })
