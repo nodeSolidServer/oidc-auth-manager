@@ -194,6 +194,19 @@ class UserStore {
       })
       .then(() => this.backend.put('users', userKey, user))
   }
+  /**
+   * Permanently deletes the files of a user
+   *
+   * @param user {UserAccount}
+   *
+   * @return {Promise}
+   */
+
+  deleteUser (user) {
+    let userKey = UserStore.normalizeIdKey(user.id)
+
+    return this.backend.del('users', userKey)
+  }
 
   /**
    * Saves an "alias" user object, used for linking local account IDs to
