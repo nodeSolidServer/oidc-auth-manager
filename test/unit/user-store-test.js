@@ -225,8 +225,8 @@ describe('UserStore', () => {
 
       store.backend.del = sinon.stub()
 
-      return store.deleteUser({ id: userId })
-        .then(() => expect(store.backend.del).to.have.been.calledWith('users', UserStore.normalizeIdKey(userId)))
+      store.deleteUser({ id: userId })
+      expect(store.backend.del).to.have.been.calledWith('users', UserStore.normalizeIdKey(userId))
     })
   })
 })

@@ -205,8 +205,7 @@ class UserStore {
   deleteUser (user) {
     let userKey = UserStore.normalizeIdKey(user.id)
 
-    return Promise.resolve()
-      .then(() => this.backend.del('users', userKey))
+    return this.backend.del('users', userKey)
   }
 
   /**
