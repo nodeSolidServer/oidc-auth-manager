@@ -220,13 +220,15 @@ describe('UserStore', () => {
       store = UserStore.from({ path: './db' })
     })
 
-    it('should call backend.del with normalized user id', () => {
+    it('should call backend.del with normalized user id and email', () => {
       let userId = 'alice.solidtest.space/profile/card#me'
+      let email = 'alice@example.com'
 
       store.backend.del = sinon.stub()
 
-      store.deleteUser({ id: userId })
+      store.deleteUser({ id: userId, email: email })
       expect(store.backend.del).to.have.been.calledWith('users', UserStore.normalizeIdKey(userId))
+      expect(store.backend.del).to.have.been.calledWith('users-by-email', UserStore.normalizeEmailKey(email))
     })
   })
 })
