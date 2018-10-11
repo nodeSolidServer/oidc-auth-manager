@@ -4,6 +4,7 @@ const chai = require('chai')
 const dirtyChai = require('dirty-chai')
 chai.use(dirtyChai)
 const expect = chai.expect
+const assert = chai.assert
 const sinon = require('sinon')
 const sinonChai = require('sinon-chai')
 chai.use(sinonChai)
@@ -226,9 +227,27 @@ describe('UserStore', () => {
 
       store.backend.del = sinon.stub()
 
-      store.deleteUser({ id: userId, email: email })
-      expect(store.backend.del).to.have.been.calledWith('users', UserStore.normalizeIdKey(userId))
-      expect(store.backend.del).to.have.been.calledWith('users-by-email', UserStore.normalizeEmailKey(email))
+      return store.deleteUser({ id: userId, email: email })
+        .then(() => {
+          expect(store.backend.del).to.have.been.calledWith('users', UserStore.normalizeIdKey(userId))
+          expect(store.backend.del).to.have.been.calledWith('users-by-email', UserStore.normalizeEmailKey(email))
+        })
+    })
+
+    it('should call backend.del with normalized user id but no email', () => {
+      let userId = 'alice.solidtest.space/profile/card#me'
+
+      store.backend.del = sinon.stub()
+
+      return store.deleteUser({ id: userId })
+        .then(() => {
+          expect(store.backend.del).to.have.been.calledWith('users', UserStore.normalizeIdKey(userId))
+          expect(store.backend.del).to.not.have.been.calledWith('users-by-email', UserStore.normalizeEmailKey())
+        })
+        .then(
+          () => Promise.reject(new Error('Expected method to reject.')),
+          err => assert.instanceOf(err, Error)
+        )
     })
   })
 })
