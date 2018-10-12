@@ -204,8 +204,15 @@ class UserStore {
 
   deleteUser (user) {
     let userKey = UserStore.normalizeIdKey(user.id)
-
-    return this.backend.del('users', userKey)
+    var deletedEmail
+    if (user.email) {
+      let emailKey = UserStore.normalizeEmailKey(user.email)
+      deletedEmail = this.backend.del('users-by-email', emailKey)
+    } else {
+      deletedEmail = Promise.reject(new Error('No email given'))
+    }
+    let deletedUser = this.backend.del('users', userKey)
+    return Promise.all([deletedEmail, deletedUser])
   }
 
   /**
