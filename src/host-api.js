@@ -83,10 +83,13 @@ function initSubjectClaim (authRequest, webId) {
 
 function obtainConsent (authRequest) {
   let debug = authRequest.host.debug || console.error.bind(console)
-  let skipConsent = true
+  let skipConsent = false
 
   return LoginConsentRequest.handle(authRequest, skipConsent)
     .catch(error => {
+      if (error instanceof AuthResponseSent) {
+        throw error
+      }
       debug('Error in auth Consent step: ', error)
     })
 }

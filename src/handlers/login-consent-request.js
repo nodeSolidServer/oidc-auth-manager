@@ -1,5 +1,8 @@
 'use strict'
 
+const AuthResponseSent = require('../errors/auth-response-sent')
+const url = require('url')
+
 class LoginConsentRequest {
   constructor (options) {
     this.opAuthRequest = options.opAuthRequest
@@ -63,7 +66,7 @@ class LoginConsentRequest {
     let { opAuthRequest, clientId } = consentRequest
 
     // Consent for the local RP client (the home pod) is implied
-    if (consentRequest.isLocalRpClient(clientId)) {
+    if (consentRequest.isLocalRpClient(consentRequest)) {
       return Promise.resolve()
         .then(() => { consentRequest.markConsentSuccess(opAuthRequest) })
         .then(() => opAuthRequest)
@@ -82,7 +85,7 @@ class LoginConsentRequest {
         if (priorConsent) {
           consentRequest.markConsentSuccess(opAuthRequest)
         } else {
-          consentRequest.renderConsentPage()
+          consentRequest.redirectToConsent()
         }
       })
       .then(() => opAuthRequest)
@@ -95,10 +98,10 @@ class LoginConsentRequest {
     return this.params['client_id']
   }
 
-  isLocalRpClient (clientId) {
-    let host = this.opAuthRequest.host || {}
-
-    return !!clientId && clientId === host.localClientId
+  isLocalRpClient (request) {
+    const parsedAppOrigin = url.parse(request.opAuthRequest.params.redirect_uri)
+    const appOrigin = `${parsedAppOrigin.protocol}//${parsedAppOrigin.host}`
+    return request.opAuthRequest.req.app.locals.ldp.serverUri === appOrigin
   }
 
   checkSavedConsentFor (opAuthRequest) {
@@ -114,11 +117,21 @@ class LoginConsentRequest {
     return Promise.resolve(clientId)
   }
 
-  renderConsentPage () {
-    let { response, params, opAuthRequest } = this
-
-    response.render('auth/consent', params)
-    opAuthRequest.headersSent = true
+  redirectToConsent (authRequest) {
+    let { opAuthRequest } = this
+    let consentUrl = url.parse('/consent')
+    consentUrl.query = opAuthRequest.req.query
+  
+    consentUrl = url.format(consentUrl)
+    opAuthRequest.subject = null
+  
+    opAuthRequest.res.redirect(consentUrl)
+  
+    this.signalResponseSent()
+  }
+  
+  signalResponseSent () {
+    throw new AuthResponseSent('User redirected to login')
   }
 }
 
