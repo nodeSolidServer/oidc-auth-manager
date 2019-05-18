@@ -137,7 +137,7 @@ class LoginConsentRequest {
   }
 
   signalResponseSent () {
-    throw new AuthResponseSent('User redirected to login')
+    throw new AuthResponseSent('User redirected')
   }
 }
 
