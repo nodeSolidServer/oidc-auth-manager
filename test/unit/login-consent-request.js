@@ -194,13 +194,11 @@ describe('LoginConsentRequest', () => {
         req = { body: { scope: 'openid', client_id: clientId } }
         res = HttpMocks.createResponse()
         opAuthRequest = createOpAuthRequest({ res, host })
-        opAuthRequest = {
-          ...opAuthRequest,
-          req: {
-            ...opAuthRequest.req,
+        opAuthRequest = Object.assign(opAuthRequest, {
+          req: Object.assign(opAuthRequest.req, {
             body: req.body
-          }
-        }
+          })
+        })
       })
 
       it('should mark successful consent automatically', () => {
@@ -234,13 +232,11 @@ describe('LoginConsentRequest', () => {
         req = { body: { consent: true, scope: 'openid', client_id: clientId } }
         res = HttpMocks.createResponse()
         opAuthRequest = createOpAuthRequest({ res, host })
-        opAuthRequest = {
-          ...opAuthRequest,
-          req: {
-            ...opAuthRequest.req,
+        opAuthRequest = Object.assign(opAuthRequest, {
+          req: Object.assign(opAuthRequest.req, {
             body: req.body
-          }
-        }
+          })
+        })
       })
 
       it('should call saveConsentForClient()', () => {
@@ -290,16 +286,14 @@ describe('LoginConsentRequest', () => {
         req = { body: { scope: 'openid' } }
         res = HttpMocks.createResponse()
         opAuthRequest = createOpAuthRequest({ res })
-        opAuthRequest = {
-          ...opAuthRequest,
-          req: {
-            ...opAuthRequest.req,
-            body: req.body,
+        opAuthRequest = Object.assign(opAuthRequest, {
+          req: Object.assign(opAuthRequest.req, {
             session: {
               consentedOrigins: []
-            }
-          }
-        }
+            },
+            body: req.body
+          })
+        })
       })
 
       describe('if user consent has been previously saved', () => {
@@ -363,15 +357,13 @@ describe('LoginConsentRequest', () => {
       let redirect = sinon.stub(res, 'redirect')
 
       let opAuthRequest = createOpAuthRequest({ res })
-      opAuthRequest = {
-        ...opAuthRequest,
-        req: {
-          ...opAuthRequest.req,
+      opAuthRequest = Object.assign(opAuthRequest, {
+        req: Object.assign(opAuthRequest.req, {
           session: {
             consentedOrigins: []
           }
-        }
-      }
+        })
+      })
       let request = LoginConsentRequest.from(opAuthRequest)
 
       return LoginConsentRequest.obtainConsent(request)
