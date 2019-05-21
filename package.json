@@ -38,7 +38,7 @@
   },
   "homepage": "https://github.com/solid/oidc-auth-manager",
   "dependencies": {
-    "@solid/oidc-op": "solid/oidc-op#access-token-audience",
+    "@solid/oidc-op": "^0.5.0",
     "@solid/oidc-rs": "^0.3.2",
     "@solid/solid-multi-rp-client": "^0.4.3",
     "ajv": "^5.5.2",
