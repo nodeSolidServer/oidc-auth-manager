@@ -1,5 +1,8 @@
 'use strict'
 
+const AuthResponseSent = require('../errors/auth-response-sent')
+const url = require('url')
+
 class LoginConsentRequest {
   constructor (options) {
     this.opAuthRequest = options.opAuthRequest
@@ -62,15 +65,18 @@ class LoginConsentRequest {
   static obtainConsent (consentRequest) {
     let { opAuthRequest, clientId } = consentRequest
 
+    const parsedAppOrigin = url.parse(consentRequest.opAuthRequest.params.redirect_uri)
+    const appOrigin = `${parsedAppOrigin.protocol}//${parsedAppOrigin.host}`
+
     // Consent for the local RP client (the home pod) is implied
-    if (consentRequest.isLocalRpClient(clientId)) {
+    if (consentRequest.isLocalRpClient(appOrigin)) {
       return Promise.resolve()
         .then(() => { consentRequest.markConsentSuccess(opAuthRequest) })
         .then(() => opAuthRequest)
     }
 
     // Check if user has submitted this from a Consent page
-    if (consentRequest.params.consent) {
+    if (consentRequest.hasAlreadyConsented(appOrigin)) {
       return consentRequest.saveConsentForClient(clientId)
         .then(() => { consentRequest.markConsentSuccess(opAuthRequest) })
         .then(() => opAuthRequest)
@@ -82,7 +88,7 @@ class LoginConsentRequest {
         if (priorConsent) {
           consentRequest.markConsentSuccess(opAuthRequest)
         } else {
-          consentRequest.renderConsentPage()
+          consentRequest.redirectToConsent()
         }
       })
       .then(() => opAuthRequest)
@@ -95,10 +101,13 @@ class LoginConsentRequest {
     return this.params['client_id']
   }
 
-  isLocalRpClient (clientId) {
-    let host = this.opAuthRequest.host || {}
+  isLocalRpClient (appOrigin) {
+    return this.opAuthRequest.req.app.locals.ldp.serverUri === appOrigin
+  }
 
-    return !!clientId && clientId === host.localClientId
+  hasAlreadyConsented (appOrigin) {
+    return this.opAuthRequest.req.session.consentedOrigins &&
+      this.opAuthRequest.req.session.consentedOrigins.includes(appOrigin)
   }
 
   checkSavedConsentFor (opAuthRequest) {
@@ -114,11 +123,21 @@ class LoginConsentRequest {
     return Promise.resolve(clientId)
   }
 
-  renderConsentPage () {
-    let { response, params, opAuthRequest } = this
+  redirectToConsent (authRequest) {
+    let { opAuthRequest } = this
+    let consentUrl = url.parse('/consent')
+    consentUrl.query = opAuthRequest.req.query
 
-    response.render('auth/consent', params)
-    opAuthRequest.headersSent = true
+    consentUrl = url.format(consentUrl)
+    opAuthRequest.subject = null
+
+    opAuthRequest.res.redirect(consentUrl)
+
+    this.signalResponseSent()
+  }
+
+  signalResponseSent () {
+    throw new AuthResponseSent('User redirected')
   }
 }
 
