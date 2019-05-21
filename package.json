@@ -41,6 +41,7 @@
     "@solid/oidc-op": "solid/oidc-op#access-token-audience",
     "@solid/oidc-rs": "^0.3.2",
     "@solid/solid-multi-rp-client": "^0.4.3",
+    "ajv": "^5.5.2",
     "bcryptjs": "^2.4.3",
     "fs-extra": "^6.0.1",
     "kvplus-files": "0.0.4",
