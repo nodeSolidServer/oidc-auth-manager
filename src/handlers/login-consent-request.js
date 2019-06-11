@@ -125,7 +125,7 @@ class LoginConsentRequest {
 
   redirectToConsent (authRequest) {
     let { opAuthRequest } = this
-    let consentUrl = url.parse('/consent')
+    let consentUrl = url.parse('/sharing')
     consentUrl.query = opAuthRequest.req.query
 
     consentUrl = url.format(consentUrl)
