@@ -254,6 +254,7 @@ class OidcManager {
   initRs () {
     let rsConfig = { // oidc-rs
       defaults: {
+        tokenTypesSupported: [ 'legacyPop', 'dpop' ],
         handleErrors: false,
         optional: true,
         query: true,
