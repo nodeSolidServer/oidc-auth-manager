@@ -384,7 +384,7 @@ class OidcManager {
     }
 
     // Otherwise, verify that issuer is the preferred OIDC provider for the web id
-    return discoverProviderFor(webId)
+    return discoverProviderFor(webId, issuer)
       .then(preferredProvider => {
         if (preferredProvider === issuer) { // everything checks out
           return webId
