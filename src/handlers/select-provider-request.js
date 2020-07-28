@@ -31,19 +31,19 @@ class SelectProviderRequest {
    */
   validate () {
     if (!this.webId) {
-      let error = new Error('No webid is given for Provider Discovery')
+      const error = new Error('No webid is given for Provider Discovery')
       error.statusCode = 400
       throw error
     }
 
     if (!validUrl.isUri(this.webId)) {
-      let error = new Error('Invalid webid given for Provider Discovery')
+      const error = new Error('Invalid webid given for Provider Discovery')
       error.statusCode = 400
       throw error
     }
 
     if (!this.oidcManager) {
-      let error = new Error('OIDC multi-rp client not initialized')
+      const error = new Error('OIDC multi-rp client not initialized')
       error.statusCode = 500
       throw error
     }
@@ -67,12 +67,12 @@ class SelectProviderRequest {
 
     let oidcManager, serverUri
     if (req.app && req.app.locals) {
-      let locals = req.app.locals
+      const locals = req.app.locals
       oidcManager = locals.oidc
       serverUri = locals.host.serverUri
     }
 
-    let options = {
+    const options = {
       webId,
       oidcManager,
       serverUri,
@@ -81,7 +81,7 @@ class SelectProviderRequest {
       session: req.session
     }
 
-    let request = new SelectProviderRequest(options)
+    const request = new SelectProviderRequest(options)
 
     return request
   }
@@ -198,13 +198,13 @@ class SelectProviderRequest {
    * @return {Promise<string>}
    */
   authUrlFor (providerUri) {
-    let multiRpClient = this.oidcManager.clients
+    const multiRpClient = this.oidcManager.clients
 
     return multiRpClient.authUrlForIssuer(providerUri, this.session)
   }
 
   error (error) {
-    let res = this.response
+    const res = this.response
 
     res.status(error.statusCode || 400)
 
@@ -212,7 +212,7 @@ class SelectProviderRequest {
   }
 
   renderView () {
-    let res = this.response
+    const res = this.response
 
     res.render('auth/select-provider', { serverUri: this.serverUri })
   }

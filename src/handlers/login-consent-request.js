@@ -1,4 +1,5 @@
 'use strict'
+/* eslint-disable node/no-deprecated-api */
 
 const AuthResponseSent = require('../errors/auth-response-sent')
 const url = require('url')
@@ -17,12 +18,12 @@ class LoginConsentRequest {
    * @return {Promise<OPAuthenticationRequest>}
    */
   static handle (opAuthRequest, skipConsent = false) {
-    let notLoggedIn = !opAuthRequest.subject
+    const notLoggedIn = !opAuthRequest.subject
     if (notLoggedIn) {
       return Promise.resolve(opAuthRequest) // pass through
     }
 
-    let consentRequest = LoginConsentRequest.from(opAuthRequest)
+    const consentRequest = LoginConsentRequest.from(opAuthRequest)
 
     if (skipConsent) {
       consentRequest.markConsentSuccess(opAuthRequest)
@@ -38,9 +39,9 @@ class LoginConsentRequest {
    * @return {LoginConsentRequest}
    */
   static from (opAuthRequest) {
-    let params = LoginConsentRequest.extractParams(opAuthRequest)
+    const params = LoginConsentRequest.extractParams(opAuthRequest)
 
-    let options = {
+    const options = {
       opAuthRequest,
       params,
       response: opAuthRequest.res
@@ -50,10 +51,10 @@ class LoginConsentRequest {
   }
 
   static extractParams (opAuthRequest) {
-    let req = opAuthRequest.req
-    let query = req.query || {}
-    let body = req.body || {}
-    let params = query['client_id'] ? query : body
+    const req = opAuthRequest.req
+    const query = req.query || {}
+    const body = req.body || {}
+    const params = query.client_id ? query : body
     return params
   }
 
@@ -63,7 +64,7 @@ class LoginConsentRequest {
    * @return {Promise<OPAuthenticationRequest>}
    */
   static obtainConsent (consentRequest) {
-    let { opAuthRequest, clientId } = consentRequest
+    const { opAuthRequest, clientId } = consentRequest
 
     const parsedAppOrigin = url.parse(consentRequest.opAuthRequest.params.redirect_uri)
     const appOrigin = `${parsedAppOrigin.protocol}//${parsedAppOrigin.host}`
@@ -98,7 +99,7 @@ class LoginConsentRequest {
    * @return {string}
    */
   get clientId () {
-    return this.params['client_id']
+    return this.params.client_id
   }
 
   isLocalRpClient (appOrigin) {
@@ -124,7 +125,7 @@ class LoginConsentRequest {
   }
 
   redirectToConsent (authRequest) {
-    let { opAuthRequest } = this
+    const { opAuthRequest } = this
     let consentUrl = url.parse('/sharing')
     consentUrl.query = opAuthRequest.req.query
 

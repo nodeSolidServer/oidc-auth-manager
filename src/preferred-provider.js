@@ -40,8 +40,8 @@ function preferredProviderFor (uri) {
  *   provider exists at the given uri, or `null` if none exists
  */
 function providerExists (uri) {
-  let providerOrigin = (new URL(uri)).origin
-  let providerConfigUri = providerOrigin + '/.well-known/openid-configuration'
+  const providerOrigin = (new URL(uri)).origin
+  const providerConfigUri = providerOrigin + '/.well-known/openid-configuration'
 
   return fetch(providerConfigUri, { method: 'HEAD' })
     .then(result => {
@@ -101,11 +101,11 @@ function discoverFromProfile (webId) {
 
   return fetcher.load(webId, { force: true })
     .then(response => {
-      let providerTerm = rdf.namedNode('http://www.w3.org/ns/solid/terms#oidcIssuer')
-      let providerUri = store.anyValue(rdf.namedNode(webId), providerTerm)
+      const providerTerm = rdf.namedNode('http://www.w3.org/ns/solid/terms#oidcIssuer')
+      const providerUri = store.anyValue(rdf.namedNode(webId), providerTerm)
       return providerUri
     }, err => {
-      let error = new Error(`Could not reach Web ID ${webId} to discover provider`)
+      const error = new Error(`Could not reach Web ID ${webId} to discover provider`)
       error.cause = err
       error.statusCode = 400
       throw error
@@ -122,7 +122,7 @@ function discoverFromProfile (webId) {
  * @return {string}
  */
 function parseProviderLink (headers) {
-  let links = li.parse(headers.get('link')) || {}
+  const links = li.parse(headers.get('link')) || {}
 
   return links['http://openid.net/specs/connect/1.0/issuer']
 }
@@ -136,14 +136,14 @@ function parseProviderLink (headers) {
  */
 function validateProviderUri (provider, webId) {
   if (!provider) {
-    let error = new Error(`OIDC issuer not advertised for ${webId}.
+    const error = new Error(`OIDC issuer not advertised for ${webId}.
     See https://github.com/solid/webid-oidc-spec#authorized-oidc-issuer-discovery`)
     error.statusCode = 400
     throw error
   }
 
   if (!validUrl.isUri(provider)) {
-    let error = new Error(`OIDC issuer for ${webId} is not a valid URI: ${provider}`)
+    const error = new Error(`OIDC issuer for ${webId} is not a valid URI: ${provider}`)
     error.statusCode = 400
     throw error
   }
