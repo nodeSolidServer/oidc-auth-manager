@@ -19,14 +19,14 @@ class LogoutRequest {
   static handle (req, res) {
     return Promise.resolve()
       .then(() => {
-        let request = LogoutRequest.fromParams(req, res)
+        const request = LogoutRequest.fromParams(req, res)
 
         return LogoutRequest.logout(request)
       })
   }
 
   static fromParams (req, res) {
-    let options = {
+    const options = {
       request: req,
       response: res,
       returnToUrl: LogoutRequest.parseReturnUrl(req)
@@ -36,7 +36,7 @@ class LogoutRequest {
   }
 
   static parseReturnUrl (req) {
-    let query = req.query || {}
+    const query = req.query || {}
     return query.post_logout_redirect_uri ? query.post_logout_redirect_uri : query.returnToUrl
   }
 
@@ -46,7 +46,7 @@ class LogoutRequest {
   }
 
   clearUserSession () {
-    let session = this.request.session
+    const session = this.request.session
 
     session.accessToken = ''
     session.refreshToken = ''

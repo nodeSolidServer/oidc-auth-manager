@@ -22,7 +22,7 @@ describe('AuthCallbackRequest', () => {
 
   describe('constructor()', () => {
     it('should initialize with provided options', () => {
-      let options = {
+      const options = {
         requestUri: 'https://example.com/api/auth/rp/localhost',
         issuer: 'https://another.server.com',
         oidcManager: {},
@@ -33,7 +33,7 @@ describe('AuthCallbackRequest', () => {
         debug: {}
       }
 
-      let request = new AuthCallbackRequest(options)
+      const request = new AuthCallbackRequest(options)
 
       expect(request.requestUri).to.equal(options.requestUri)
       expect(request.issuer).to.equal(options.issuer)
@@ -46,7 +46,7 @@ describe('AuthCallbackRequest', () => {
     })
 
     it('should init debug to console by default', () => {
-      let request = new AuthCallbackRequest({})
+      const request = new AuthCallbackRequest({})
 
       expect(request.debug).to.exist()
     })
@@ -54,9 +54,9 @@ describe('AuthCallbackRequest', () => {
 
   describe('AuthCallbackRequest.get', () => {
     it('should create a request instance', () => {
-      let AuthCallbackRequest = require('../../src/handlers/auth-callback-request')
-      let req = HttpMocks.createRequest({ session: {} })
-      let next = () => {}
+      const AuthCallbackRequest = require('../../src/handlers/auth-callback-request')
+      const req = HttpMocks.createRequest({ session: {} })
+      const next = () => {}
 
       sinon.spy(AuthCallbackRequest, 'fromParams')
       AuthCallbackRequest.handle = sinon.stub().resolves(null)
@@ -70,26 +70,26 @@ describe('AuthCallbackRequest', () => {
 
   describe('fromParams()', () => {
     it('should initialize an AuthCallbackRequest instance from request params', () => {
-      let AuthCallbackRequest = require('../../src/handlers/auth-callback-request')
+      const AuthCallbackRequest = require('../../src/handlers/auth-callback-request')
 
-      let requestUri = 'https://example.com/api/oidc/rp'
+      const requestUri = 'https://example.com/api/oidc/rp'
       AuthCallbackRequest.fullUriFor = sinon.stub().returns(requestUri)
 
-      let oidcManager = {}
-      let host = { serverUri: 'https://example.com' }
-      let returnToUrl = 'https://example.com/resource#hash'
-      let session = { returnToUrl }
+      const oidcManager = {}
+      const host = { serverUri: 'https://example.com' }
+      const returnToUrl = 'https://example.com/resource#hash'
+      const session = { returnToUrl }
 
-      let req = {
+      const req = {
         session,
         app: { locals: { oidc: oidcManager, host } },
         params: {
-          'issuer_id': encodeURIComponent(host.serverUri)
+          issuer_id: encodeURIComponent(host.serverUri)
         }
       }
-      let res = HttpMocks.createResponse()
+      const res = HttpMocks.createResponse()
 
-      let request = AuthCallbackRequest.fromParams(req, res)
+      const request = AuthCallbackRequest.fromParams(req, res)
 
       expect(request.issuer).to.equal('https://example.com')
       expect(request.serverUri).to.equal('https://example.com')
@@ -103,7 +103,7 @@ describe('AuthCallbackRequest', () => {
 
   describe('validate()', () => {
     it('should throw an error if issuer param is missing', () => {
-      let request = new AuthCallbackRequest({ issuer: 'https://example.com' })
+      const request = new AuthCallbackRequest({ issuer: 'https://example.com' })
 
       expect(() => request.validate()).to.not.throw(Error)
 
@@ -115,14 +115,14 @@ describe('AuthCallbackRequest', () => {
 
   describe('loadClient()', () => {
     it('should load an rp by issuer from the client store', () => {
-      let issuer = 'https://example.com'
-      let client = {}
-      let oidcManager = {
+      const issuer = 'https://example.com'
+      const client = {}
+      const oidcManager = {
         clients: {}
       }
       oidcManager.clients.clientForIssuer = sinon.stub().resolves(client)
 
-      let request = new AuthCallbackRequest({ issuer, oidcManager })
+      const request = new AuthCallbackRequest({ issuer, oidcManager })
 
       return request.loadClient()
         .then(loadedClient => {
@@ -146,7 +146,7 @@ describe('AuthCallbackRequest', () => {
       const oidcManager = {}
       oidcManager.webIdFromClaims = sinon.stub().resolves(aliceWebId)
 
-      let request = new AuthCallbackRequest({ session: {}, oidcManager })
+      const request = new AuthCallbackRequest({ session: {}, oidcManager })
 
       await request.initSessionUserAuth(rpSession)
 
@@ -167,13 +167,13 @@ describe('AuthCallbackRequest', () => {
 
   describe('validateResponse()', () => {
     it('should validate the response', () => {
-      let client = {}
+      const client = {}
       client.validateResponse = sinon.stub().resolves()
 
-      let requestUri = 'https://example.com/callback'
-      let session = {}
+      const requestUri = 'https://example.com/callback'
+      const session = {}
 
-      let request = new AuthCallbackRequest({ requestUri, session })
+      const request = new AuthCallbackRequest({ requestUri, session })
 
       return request.validateResponse(client)
         .then(() => {
@@ -185,11 +185,11 @@ describe('AuthCallbackRequest', () => {
 
   describe('resumeUserWorkflow()', () => {
     it('should redirect to the returnToUrl and clear it from session', () => {
-      let response = HttpMocks.createResponse()
-      let returnToUrl = 'https://example.com/resource'
-      let session = { returnToUrl }
+      const response = HttpMocks.createResponse()
+      const returnToUrl = 'https://example.com/resource'
+      const session = { returnToUrl }
 
-      let request = new AuthCallbackRequest({ session, response, returnToUrl })
+      const request = new AuthCallbackRequest({ session, response, returnToUrl })
 
       request.resumeUserWorkflow()
 

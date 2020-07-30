@@ -21,14 +21,14 @@ describe('OidcManager', () => {
 
   describe('from()', () => {
     it('should create an OidcManager instance from config', () => {
-      let providerUri = 'https://localhost:8443'
-      let dbPath = './db/oidc'
-      let saltRounds = 5
-      let host = {}
-      let authCallbackUri = providerUri + '/api/oidc/rp'
-      let postLogoutUri = providerUri + '/goodbye'
+      const providerUri = 'https://localhost:8443'
+      const dbPath = './db/oidc'
+      const saltRounds = 5
+      const host = {}
+      const authCallbackUri = providerUri + '/api/oidc/rp'
+      const postLogoutUri = providerUri + '/goodbye'
 
-      let options = {
+      const options = {
         serverUri: providerUri,
         providerUri,
         dbPath,
@@ -38,7 +38,7 @@ describe('OidcManager', () => {
         postLogoutUri
       }
 
-      let oidc = OidcManager.from(options)
+      const oidc = OidcManager.from(options)
 
       expect(oidc.providerUri).to.equal(providerUri)
       expect(oidc.serverUri).to.equal(providerUri)
@@ -47,7 +47,7 @@ describe('OidcManager', () => {
       expect(oidc.authCallbackUri).to.equal(authCallbackUri)
       expect(oidc.postLogoutUri).to.equal(postLogoutUri)
 
-      let storePaths = oidc.storePaths
+      const storePaths = oidc.storePaths
       expect(storePaths.providerStore.endsWith('oidc/op'))
       expect(storePaths.multiRpStore.endsWith('oidc/rp'))
       expect(storePaths.userStore.endsWith('oidc/users'))
@@ -61,12 +61,12 @@ describe('OidcManager', () => {
 
   describe('initMultiRpClient()', () => {
     it('should initialize a Multi RP Client Store instance', () => {
-      let providerUri = 'https://localhost:8443'
-      let authCallbackUri = providerUri + '/api/oidc/rp'
-      let postLogoutUri = providerUri + '/goodbye'
-      let dbPath = './db/oidc-mgr'
+      const providerUri = 'https://localhost:8443'
+      const authCallbackUri = providerUri + '/api/oidc/rp'
+      const postLogoutUri = providerUri + '/goodbye'
+      const dbPath = './db/oidc-mgr'
 
-      let config = {
+      const config = {
         serverUri: providerUri,
         providerUri,
         authCallbackUri,
@@ -74,10 +74,10 @@ describe('OidcManager', () => {
         dbPath
       }
 
-      let oidc = OidcManager.from(config)
+      const oidc = OidcManager.from(config)
       oidc.initMultiRpClient()
 
-      let clientStore = oidc.clients
+      const clientStore = oidc.clients
       expect(clientStore.store.backend.path.endsWith('oidc-mgr/rp/clients'))
       expect(clientStore).to.respondTo('registerClient')
     })
@@ -85,13 +85,13 @@ describe('OidcManager', () => {
 
   describe('initRs()', () => {
     it('should initialize a Resource Authenticator instance', () => {
-      let serverUri = 'https://localhost:8443'
-      let authCallbackUri = serverUri + '/api/oidc/rp'
-      let postLogoutUri = serverUri + '/goodbye'
+      const serverUri = 'https://localhost:8443'
+      const authCallbackUri = serverUri + '/api/oidc/rp'
+      const postLogoutUri = serverUri + '/goodbye'
 
-      let config = { serverUri, providerUri: serverUri, authCallbackUri, postLogoutUri }
+      const config = { serverUri, providerUri: serverUri, authCallbackUri, postLogoutUri }
 
-      let oidc = OidcManager.from(config)
+      const oidc = OidcManager.from(config)
       oidc.initRs()
 
       expect(oidc.rs.defaults.query).to.be.true()
@@ -102,12 +102,12 @@ describe('OidcManager', () => {
 
   describe('initUserStore()', () => {
     it('should initialize a UserStore instance', () => {
-      let dbPath = './db/oidc-mgr'
-      let providerUri = 'https://localhost:8443'
-      let authCallbackUri = providerUri + '/api/oidc/rp'
-      let postLogoutUri = providerUri + '/goodbye'
+      const dbPath = './db/oidc-mgr'
+      const providerUri = 'https://localhost:8443'
+      const authCallbackUri = providerUri + '/api/oidc/rp'
+      const postLogoutUri = providerUri + '/goodbye'
 
-      let config = {
+      const config = {
         providerUri,
         authCallbackUri,
         postLogoutUri,
@@ -115,7 +115,7 @@ describe('OidcManager', () => {
         dbPath
       }
 
-      let oidc = OidcManager.from(config)
+      const oidc = OidcManager.from(config)
       oidc.initUserStore()
 
       expect(oidc.users.backend.path.endsWith('oidc-mgr/users'))
@@ -125,26 +125,26 @@ describe('OidcManager', () => {
 
   describe('initProvider()', () => {
     it('should initialize an OIDC Provider instance', () => {
-      let providerUri = 'https://localhost:8443'
-      let authCallbackUri = providerUri + '/api/oidc/rp'
-      let postLogoutUri = providerUri + '/goodbye'
+      const providerUri = 'https://localhost:8443'
+      const authCallbackUri = providerUri + '/api/oidc/rp'
+      const postLogoutUri = providerUri + '/goodbye'
 
-      let host = {
+      const host = {
         authenticate: () => {},
         obtainConsent: () => {},
         logout: () => {}
       }
-      let dbPath = './db/oidc-mgr'
-      let config = { providerUri, host, dbPath, authCallbackUri, postLogoutUri }
+      const dbPath = './db/oidc-mgr'
+      const config = { providerUri, host, dbPath, authCallbackUri, postLogoutUri }
 
-      let oidc = OidcManager.from(config)
+      const oidc = OidcManager.from(config)
 
-      let loadProviderConfig = sinon.spy(oidc, 'loadProviderConfig')
+      const loadProviderConfig = sinon.spy(oidc, 'loadProviderConfig')
 
       oidc.initProvider()
 
       expect(oidc.provider.issuer).to.equal(providerUri)
-      let storePath = oidc.provider.backend.path
+      const storePath = oidc.provider.backend.path
       expect(storePath.endsWith('oidc-mgr/op')).to.be.true()
       expect(oidc.provider.host.authenticate).to.equal(host.authenticate)
       expect(loadProviderConfig).to.have.been.called()
@@ -153,15 +153,15 @@ describe('OidcManager', () => {
 
   describe('providerConfigPath()', () => {
     it('should return the Provider config file path', () => {
-      let providerUri = 'https://localhost:8443'
-      let authCallbackUri = providerUri + '/api/oidc/rp'
-      let postLogoutUri = providerUri + '/goodbye'
-      let dbPath = './db/oidc-mgr'
-      let config = { dbPath, providerUri, authCallbackUri, postLogoutUri }
+      const providerUri = 'https://localhost:8443'
+      const authCallbackUri = providerUri + '/api/oidc/rp'
+      const postLogoutUri = providerUri + '/goodbye'
+      const dbPath = './db/oidc-mgr'
+      const config = { dbPath, providerUri, authCallbackUri, postLogoutUri }
 
-      let oidc = OidcManager.from(config)
+      const oidc = OidcManager.from(config)
 
-      let file = oidc.providerConfigPath()
+      const file = oidc.providerConfigPath()
       expect(file.endsWith('oidc-mgr/op/provider.json')).to.be.true()
     })
   })
@@ -192,7 +192,7 @@ describe('OidcManager', () => {
     it('should first look in the webid claim', () => {
       claims.webid = aliceWebId
 
-      let webId = OidcManager.extractWebId(claims)
+      const webId = OidcManager.extractWebId(claims)
 
       expect(webId).to.equal(aliceWebId)
     })
@@ -200,7 +200,7 @@ describe('OidcManager', () => {
     it('should use the sub claim if it contains an http* uri', () => {
       claims.sub = aliceWebId
 
-      let webId = OidcManager.extractWebId(claims)
+      const webId = OidcManager.extractWebId(claims)
 
       expect(webId).to.equal(aliceWebId)
     })
@@ -235,7 +235,7 @@ describe('OidcManager', () => {
     })
 
     it('should skip verifying preferred provider if webid and issuer match', () => {
-      let claims = {
+      const claims = {
         iss: 'https://example.com',
         sub: 'https://example.com/profile#me'
       }
@@ -247,7 +247,7 @@ describe('OidcManager', () => {
     })
 
     it('should verify provider if webid and issuer do not match', () => {
-      let claims = {
+      const claims = {
         iss: 'https://provider.com',
         sub: 'https://example.com/profile#me'
       }
@@ -255,7 +255,7 @@ describe('OidcManager', () => {
       nock('https://example.com')
         .options('/profile')
         .reply(204, 'No content', {
-          'Link': '<https://provider.com>; rel="http://openid.net/specs/connect/1.0/issuer"'
+          Link: '<https://provider.com>; rel="http://openid.net/specs/connect/1.0/issuer"'
         })
 
       return oidc.webIdFromClaims(claims)
@@ -265,7 +265,7 @@ describe('OidcManager', () => {
     })
 
     it('should throw an error if provider could not be verified', done => {
-      let claims = {
+      const claims = {
         iss: 'https://provider.com',
         sub: 'https://example.com/profile#me'
       }
@@ -273,7 +273,7 @@ describe('OidcManager', () => {
       nock('https://example.com')
         .options('/profile')
         .reply(204, 'No content', {
-          'Link': '<https://another-provider.com>; rel="http://openid.net/specs/connect/1.0/issuer"'
+          Link: '<https://another-provider.com>; rel="http://openid.net/specs/connect/1.0/issuer"'
         })
 
       oidc.webIdFromClaims(claims)
@@ -286,36 +286,36 @@ describe('OidcManager', () => {
 
   describe('domainMatches', () => {
     it('should be true if webid came from same origin as issuer', () => {
-      let webId = 'https://alice.example.com/profile#me'
-      let issuer = 'https://alice.example.com'
+      const webId = 'https://alice.example.com/profile#me'
+      const issuer = 'https://alice.example.com'
 
       expect(OidcManager.domainMatches(issuer, webId)).to.be.true()
     })
 
     it('should be false if webid is from different domain as issuer', () => {
-      let webId = 'https://example.com/#me'
-      let issuer = 'https://provider.com'
+      const webId = 'https://example.com/#me'
+      const issuer = 'https://provider.com'
 
       expect(OidcManager.domainMatches(issuer, webId)).to.be.false()
     })
 
     it('should be true if webid origin is subdomain of issuer', () => {
-      let webId = 'https://alice.example.com/profile#me'
-      let issuer = 'https://example.com'
+      const webId = 'https://alice.example.com/profile#me'
+      const issuer = 'https://example.com'
 
       expect(OidcManager.domainMatches(issuer, webId)).to.be.true()
     })
 
     it('should be false if webid and issuer protocols do not match', () => {
-      let webId = 'http://example.com/#me'
-      let issuer = 'https://example.com'
+      const webId = 'http://example.com/#me'
+      const issuer = 'https://example.com'
 
       expect(OidcManager.domainMatches(issuer, webId)).to.be.false()
     })
 
     it('should be false if webid and issuer ports do not match', () => {
-      let webId = 'https://example.com/#me'
-      let issuer = 'https://example.com:8080'
+      const webId = 'https://example.com/#me'
+      const issuer = 'https://example.com:8080'
 
       expect(OidcManager.domainMatches(issuer, webId)).to.be.false()
     })

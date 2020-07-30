@@ -50,15 +50,15 @@ class AuthCallbackRequest {
   static fromParams (req, res) {
     let oidcManager, serverUri
     if (req.app && req.app.locals) {
-      let locals = req.app.locals
+      const locals = req.app.locals
       oidcManager = locals.oidc
       serverUri = locals.host.serverUri
     }
 
-    let requestUri = AuthCallbackRequest.fullUriFor(req)
-    let issuer = AuthCallbackRequest.extractIssuer(req)
+    const requestUri = AuthCallbackRequest.fullUriFor(req)
+    const issuer = AuthCallbackRequest.extractIssuer(req)
 
-    let options = {
+    const options = {
       issuer,
       requestUri,
       oidcManager,
@@ -68,7 +68,7 @@ class AuthCallbackRequest {
       session: req.session
     }
 
-    let request = new AuthCallbackRequest(options)
+    const request = new AuthCallbackRequest(options)
 
     return request
   }
@@ -98,14 +98,14 @@ class AuthCallbackRequest {
 
   validate () {
     if (!this.issuer) {
-      let error = new Error('Issuer id is missing from request params')
+      const error = new Error('Issuer id is missing from request params')
       error.statusCode = 400
       throw error
     }
   }
 
   loadClient () {
-    let rpClientStore = this.oidcManager.clients
+    const rpClientStore = this.oidcManager.clients
 
     return rpClientStore.clientForIssuer(this.issuer)
   }
@@ -125,7 +125,7 @@ class AuthCallbackRequest {
         authorization: rpSession.authorization
       }
     } catch (err) {
-      let error = new Error('Could not verify Web ID from token claims')
+      const error = new Error('Could not verify Web ID from token claims')
       error.statusCode = 401
       error.cause = err
       error.info = { credentials: this.session.credentials }

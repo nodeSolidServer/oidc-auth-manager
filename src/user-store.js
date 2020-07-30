@@ -51,7 +51,7 @@ class UserStore {
   static from (options) {
     options.saltRounds = options.saltRounds || DEFAULT_SALT_ROUNDS
 
-    let storeOptions = UserStore.backendOptionsFor(options.path)
+    const storeOptions = UserStore.backendOptionsFor(options.path)
     options.backend = new KVPFileStore(storeOptions)
 
     return new UserStore(options)
@@ -162,7 +162,7 @@ class UserStore {
 
   validateUser (user) {
     if (!user || !user.id) {
-      let error = new TypeError('No user id provided to user store')
+      const error = new TypeError('No user id provided to user store')
       error.status = 400
       throw error
     }
@@ -170,7 +170,7 @@ class UserStore {
 
   validatePassword (password) {
     if (!password) {
-      let error = new TypeError('No password provided')
+      const error = new TypeError('No password provided')
       error.status = 400
       throw error
     }
@@ -184,7 +184,7 @@ class UserStore {
    * @return {Promise}
    */
   saveUser (user) {
-    let userKey = UserStore.normalizeIdKey(user.id)
+    const userKey = UserStore.normalizeIdKey(user.id)
 
     return Promise.resolve()
       .then(() => {
@@ -203,15 +203,15 @@ class UserStore {
    */
 
   deleteUser (user) {
-    let userKey = UserStore.normalizeIdKey(user.id)
+    const userKey = UserStore.normalizeIdKey(user.id)
     var deletedEmail
     if (user.email) {
-      let emailKey = UserStore.normalizeEmailKey(user.email)
+      const emailKey = UserStore.normalizeEmailKey(user.email)
       deletedEmail = this.backend.del('users-by-email', emailKey)
     } else {
       deletedEmail = Promise.reject(new Error('No email given'))
     }
-    let deletedUser = this.backend.del('users', userKey)
+    const deletedUser = this.backend.del('users', userKey)
     return Promise.all([deletedEmail, deletedUser])
   }
 
@@ -225,11 +225,11 @@ class UserStore {
    * @returns {Promise}
    */
   saveAliasUserRecord (fromId, toId) {
-    let aliasRecord = {
+    const aliasRecord = {
       link: toId
     }
 
-    let aliasKey = UserStore.normalizeIdKey(fromId)
+    const aliasKey = UserStore.normalizeIdKey(fromId)
 
     return this.backend.put('users', aliasKey, aliasRecord)
   }
@@ -244,8 +244,8 @@ class UserStore {
    */
   saveUserByEmail (user) {
     if (user.email) {
-      let userByEmail = { id: user.id }
-      let key = UserStore.normalizeEmailKey(user.email)
+      const userByEmail = { id: user.id }
+      const key = UserStore.normalizeEmailKey(user.email)
       return this.backend.put('users-by-email', key, userByEmail)
     } else {
       return Promise.resolve()
@@ -260,7 +260,7 @@ class UserStore {
    * @return {Promise<Object>} User info, parsed from a JSON string
    */
   findUser (userId) {
-    let userKey = UserStore.normalizeIdKey(userId)
+    const userKey = UserStore.normalizeIdKey(userId)
 
     return this.backend.get('users', userKey)
       .then(user => {
