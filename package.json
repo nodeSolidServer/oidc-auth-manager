@@ -61,6 +61,8 @@
     "nyc": "^15.1.0",
     "sinon": "^9.0.3",
     "sinon-chai": "^3.5.0",
+    "solid-auth-cli": "^1.0.14",
+    "solid-auth-client": "^2.5.0",
     "standard": "^14.3.4",
     "whatwg-url": "^8.1.0"
   },
