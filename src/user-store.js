@@ -274,6 +274,27 @@ class UserStore {
   }
 
   /**
+   * Loads and returns a user object for a given email.
+   *
+   * @param email {string}
+   *
+   * @return {Promise<Object>} User info, parsed from a JSON string
+   */
+  findUserByEmail (email) {
+    const emailKey = UserStore.normalizeEmailKey(email)
+
+    return this.backend.get('users-by-email', emailKey)
+      .then(user => {
+        if (user && user.link) {
+          // this is an alias record, fetch the user it points to
+          return this.findUser(user.link)
+        }
+
+        return user
+      })
+  }
+
+  /**
    * Creates and returns a salted password hash, for storage with the user
    * record.
    *
