@@ -192,6 +192,21 @@ describe('UserStore', () => {
         })
     })
 
+    it('should look up user record by normalized email', () => {
+      const email = 'alice@example.com'
+      const user = { id: 'abc', email: email }
+
+      store.backend.get = sinon.stub().resolves(user)
+
+      return store.findUserByEmail(email)
+        .then(fetchedUser => {
+          expect(fetchedUser).to.equal(user)
+
+          expect(store.backend.get).to.have.been
+            .calledWith('users-by-email', 'alice%40example.com')
+        })
+    })
+
     it('should look up user record via an alias record', () => {
       const aliasId = 'alice.solidtest.space/profile/card#me'
       const aliasKey = 'alice.solidtest.space%2Fprofile%2Fcard%23me'
