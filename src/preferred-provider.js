@@ -67,11 +67,6 @@ function discoverProviderFor (webId) {
     .then(providerFromHeaders => providerFromHeaders || discoverFromProfile(webId))
 
     .then(providerUri => {
-      // drop the path (provider origin only)
-      if (providerUri) {
-        providerUri = (new URL(providerUri)).origin
-      }
-
       validateProviderUri(providerUri, webId) // Throw an error if empty or invalid
 
       return providerUri
