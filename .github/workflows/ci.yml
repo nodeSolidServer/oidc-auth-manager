@@ -1,0 +1,59 @@
+# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+name: CI
+permissions:
+  contents: write
+  pull-requests: write
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+    branches:
+      - "**"  
+  workflow_dispatch:
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: 
+          - 18.x
+          - 20.x
+          - 22.x
+
+    steps:
+      - uses: actions/checkout@v5
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: npm ci
+      - run: npm run lint --if-present
+      - run: npm test
+      - run: npm run build --if-present
+      - name: Save build
+        if: matrix.node-version == '20.x'
+        uses: actions/upload-artifact@v5
+        with:
+          name: build
+          path: |
+            .
+            !node_modules
+          retention-days: 1
+  
+  dependabot:
+    name: 'Dependabot'
+    needs: build # After the E2E and build jobs, if one of them fails, it won't merge the PR.
+    runs-on: ubuntu-latest
+    if: ${{ github.actor == 'dependabot[bot]' && github.event_name == 'pull_request'}} # Detect that the PR author is dependabot
+    steps:
+      - name: Enable auto-merge for Dependabot PRs
+        run: gh pr merge --auto --merge "$PR_URL" # Use Github CLI to merge automatically the PR
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
