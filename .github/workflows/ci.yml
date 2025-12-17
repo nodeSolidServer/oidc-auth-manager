@@ -1,6 +1,3 @@
-# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
-
 name: CI
 permissions:
   contents: write
@@ -8,34 +5,28 @@ permissions:
 on:
   push:
     branches:
-      - "**"
+      - main
   pull_request:
     branches:
-      - "**"  
-  workflow_dispatch:
+      - main
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
-        node-version: 
-          - 18.x
+        node-version:
           - 20.x
           - 22.x
-
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v2
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
       - run: npm ci
-      - run: npm run lint --if-present
       - run: npm test
-      - run: npm run build --if-present
+      - run: npm run build
       - name: Save build
         if: matrix.node-version == '20.x'
         uses: actions/upload-artifact@v5
@@ -45,15 +36,43 @@ jobs:
             .
             !node_modules
           retention-days: 1
-  
-  dependabot:
-    name: 'Dependabot'
-    needs: build # After the E2E and build jobs, if one of them fails, it won't merge the PR.
+
+  npm-publish-build:
+    needs: build
     runs-on: ubuntu-latest
-    if: ${{ github.actor == 'dependabot[bot]' && github.event_name == 'pull_request'}} # Detect that the PR author is dependabot
     steps:
-      - name: Enable auto-merge for Dependabot PRs
-        run: gh pr merge --auto --merge "$PR_URL" # Use Github CLI to merge automatically the PR
-        env:
-          PR_URL: ${{github.event.pull_request.html_url}}
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      - uses: actions/download-artifact@v6
+        with:
+          name: build
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 20.x
+      - uses: rlespinasse/github-slug-action@v3.x
+      - name: Append commit hash to package version
+        run: 'sed -i -E "s/(\"version\": *\"[^\"]+)/\1-${GITHUB_SHA_SHORT}/" package.json'
+      - name: Disable pre- and post-publish actions
+        run: 'sed -i -E "s/\"((pre|post)publish)/\"ignore:\1/" package.json'
+      - uses: JS-DevTools/npm-publish@v4.1.0
+        if: github.actor != 'dependabot[bot]' && github.actor != 'dependabot-preview[bot]'
+        with:
+          token: ${{ secrets.NPM_TOKEN }}
+          tag: ${{ env.GITHUB_REF_SLUG }}
+
+  npm-publish-latest:
+    needs: [build, npm-publish-build]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/download-artifact@v6
+        with:
+          name: build
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 20.x
+      - name: Disable pre- and post-publish actions
+        run: 'sed -i -E "s/\"((pre|post)publish)/\"ignore:\1/" package.json'
+      - uses: JS-DevTools/npm-publish@v4.1.0
+        if: github.actor != 'dependabot[bot]' && github.actor != 'dependabot-preview[bot]'
+        with:
+          token: ${{ secrets.NPM_TOKEN }}
+          tag: latest

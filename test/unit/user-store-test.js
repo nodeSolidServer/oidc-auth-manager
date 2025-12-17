@@ -194,7 +194,7 @@ describe('UserStore', () => {
 
     it('should look up user record by normalized email', () => {
       const email = 'alice@example.com'
-      const user = { id: 'abc', email: email }
+      const user = { id: 'abc', email }
 
       store.backend.get = sinon.stub().resolves(user)
 
@@ -242,7 +242,7 @@ describe('UserStore', () => {
 
       store.backend.del = sinon.stub()
 
-      return store.deleteUser({ id: userId, email: email })
+      return store.deleteUser({ id: userId, email })
         .then(() => {
           expect(store.backend.del).to.have.been.calledWith('users', UserStore.normalizeIdKey(userId))
           expect(store.backend.del).to.have.been.calledWith('users-by-email', UserStore.normalizeEmailKey(email))
