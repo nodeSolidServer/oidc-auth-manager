@@ -204,7 +204,7 @@ class UserStore {
 
   deleteUser (user) {
     const userKey = UserStore.normalizeIdKey(user.id)
-    var deletedEmail
+    let deletedEmail
     if (user.email) {
       const emailKey = UserStore.normalizeEmailKey(user.email)
       deletedEmail = this.backend.del('users-by-email', emailKey)

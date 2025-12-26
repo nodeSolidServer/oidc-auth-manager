@@ -1,8 +1,6 @@
 'use strict'
-/* eslint-disable node/no-deprecated-api */
 
 const AuthResponseSent = require('../errors/auth-response-sent')
-const url = require('url')
 
 class LoginConsentRequest {
   constructor (options) {
@@ -66,8 +64,8 @@ class LoginConsentRequest {
   static obtainConsent (consentRequest) {
     const { opAuthRequest, clientId } = consentRequest
 
-    const parsedAppOrigin = url.parse(consentRequest.opAuthRequest.params.redirect_uri)
-    const appOrigin = `${parsedAppOrigin.protocol}//${parsedAppOrigin.host}`
+    const parsedAppOrigin = new URL(consentRequest.opAuthRequest.params.redirect_uri)
+    const appOrigin = parsedAppOrigin.origin
 
     // Consent for the local RP client (the home pod) is implied
     if (consentRequest.isLocalRpClient(appOrigin)) {
@@ -126,10 +124,10 @@ class LoginConsentRequest {
 
   redirectToConsent (authRequest) {
     const { opAuthRequest } = this
-    let consentUrl = url.parse('/sharing')
-    consentUrl.query = opAuthRequest.req.query
-
-    consentUrl = url.format(consentUrl)
+    console.log('Redirecting user to /sharing')
+    console.log(opAuthRequest.host)
+    const queryString = new URLSearchParams(opAuthRequest.req.query).toString()
+    const consentUrl = `/sharing${queryString ? '?' + queryString : ''}`
     opAuthRequest.subject = null
 
     opAuthRequest.res.redirect(consentUrl)

@@ -1,7 +1,4 @@
 'use strict'
-/* eslint-disable node/no-deprecated-api */
-
-const url = require('url')
 
 const LogoutRequest = require('./handlers/logout-request')
 const LoginConsentRequest = require('./handlers/login-consent-request')
@@ -44,10 +41,11 @@ function authenticate (authRequest) {
 }
 
 function redirectToLogin (authRequest) {
-  let loginUrl = url.parse('/login')
-  loginUrl.query = authRequest.req.query
+  console.log('Redirecting user to /login')
+  console.log(authRequest.host)
 
-  loginUrl = url.format(loginUrl)
+  const queryString = new URLSearchParams(authRequest.req.query).toString()
+  const loginUrl = `/login${queryString ? '?' + queryString : ''}`
   authRequest.subject = null
 
   authRequest.res.redirect(loginUrl)
