@@ -42,9 +42,9 @@
   "homepage": "https://github.com/solid/oidc-auth-manager",
   "dependencies": {
     "@solid/oidc-op": "^0.12.1",
-    "@solid/oidc-rp": "^0.12.0",
+    "@solid/oidc-rp": "^0.12.1",
     "@solid/oidc-rs": "^0.7.0",
-    "@solid/solid-multi-rp-client": "0.7.0",
+    "@solid/solid-multi-rp-client": "^0.7.2",
     "ajv": "^8.17.1",
     "bcryptjs": "^3.0.3",
     "fs-extra": "^11.3.3",
