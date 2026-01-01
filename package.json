@@ -1,6 +1,6 @@
 {
   "name": "@solid/oidc-auth-manager",
-  "version": "0.25.1",
+  "version": "0.25.2",
   "description": "An OpenID Connect (OIDC) authentication manager (OP, RP and RS) for decentralized peer-to-peer authentication",
   "main": "./src/index.js",
   "scripts": {
@@ -42,9 +42,9 @@
   "homepage": "https://github.com/solid/oidc-auth-manager",
   "dependencies": {
     "@solid/oidc-op": "^0.12.1",
-    "@solid/oidc-rp": "^0.12.0",
+    "@solid/oidc-rp": "^0.12.1",
     "@solid/oidc-rs": "^0.7.0",
-    "@solid/solid-multi-rp-client": "0.7.0",
+    "@solid/solid-multi-rp-client": "^0.7.2",
     "ajv": "^8.17.1",
     "bcryptjs": "^3.0.3",
     "fs-extra": "^11.3.3",
